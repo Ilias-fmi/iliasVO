@@ -15,6 +15,7 @@ class ilExAssignment
 	const TYPE_PORTFOLIO = 3;
 	const TYPE_UPLOAD_TEAM = 4;
 	const TYPE_TEXT = 5;
+	const TYPE_VOTIER = 6;
 	
 	const FEEDBACK_DATE_DEADLINE = 1;
 	const FEEDBACK_DATE_SUBMISSION = 2;
@@ -318,7 +319,7 @@ class ilExAssignment
 	function isValidType($a_value)
 	{
 		if(in_array((int)$a_value, array(self::TYPE_UPLOAD, self::TYPE_BLOG, 
-			self::TYPE_PORTFOLIO, self::TYPE_UPLOAD_TEAM, self::TYPE_TEXT)))
+			self::TYPE_PORTFOLIO, self::TYPE_UPLOAD_TEAM, self::TYPE_TEXT, self::TYPE_VOTIER)))
 		{
 			return true;
 		}
@@ -1438,7 +1439,7 @@ class ilExAssignment
 	 * @return
 	 */
 	function saveMultiFeedbackFiles($a_files)
-	{			
+	{					
 		$exc = new ilObjExercise($this->getExerciseId(), false);
 		
 		include_once("./Modules/Exercise/classes/class.ilFSStorageExercise.php");

@@ -7830,6 +7830,7 @@ exc#:#exc_submission_notification_subject#:#Eine neue Abgabe wurde für die Übu
 exc#:#exc_submissions_and_grades#:#Abgaben und Noten
 exc#:#exc_submitted_files_deleted#:#Die ausgewählten Dateien wurden gelöscht.
 exc#:#exc_total_exc#:#Gesamte Übung
+exc#:#exc_type_votier#:#Votieraufgabe
 exc#:#exc_type_blog#:#Blog
 exc#:#exc_type_portfolio#:#Portfolio
 exc#:#exc_type_upload#:#Datei

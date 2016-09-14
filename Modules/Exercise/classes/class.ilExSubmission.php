@@ -50,14 +50,15 @@ class ilExSubmission
 		switch($this->assignment->getType())
 		{
 			case ilExAssignment::TYPE_UPLOAD_TEAM:					
-			case ilExAssignment::TYPE_UPLOAD:		
+			case ilExAssignment::TYPE_UPLOAD:											
+			case ilExAssignment::TYPE_VOTIER:		
 				return "File";
 
 			case ilExAssignment::TYPE_BLOG:			
 			case ilExAssignment::TYPE_PORTFOLIO:				
 				return "Object";	
 
-			case ilExAssignment::TYPE_TEXT:												
+			case ilExAssignment::TYPE_TEXT:	
 				return "Text";	
 		};
 	}
@@ -283,9 +284,10 @@ class ilExSubmission
 			{				
 				$this->team->writeLog(ilExAssignmentTeam::TEAM_LOG_ADD_FILE, 
 					$a_http_post_files["name"]);			
-			}			
-		}
-		return true;
+			}		
+			
+			return true;
+		}		
 	}
 	
 	/**
@@ -305,7 +307,7 @@ class ilExSubmission
 		try 
 		{
 			$success = ilFileUtils::processZipFile($newDir,$fileTmp, false);
-			ilFileUtils::recursive_dirscan($newDir, $filearray);			
+			ilFileUtils::recursive_dirscan($newDir, $filearray);
 
 			foreach ($filearray["file"] as $key => $filename)
 			{
@@ -323,7 +325,7 @@ class ilExSubmission
 				{
 					$success = true;
 				}
-			}			
+			}
 		} 
 		catch (ilFileUtilsException $e) 
 		{

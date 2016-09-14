@@ -131,7 +131,8 @@ class ilExAssignmentEditorGUI
 		$types = array(
 			ilExAssignment::TYPE_UPLOAD => $lng->txt("exc_type_upload"),
 			ilExAssignment::TYPE_UPLOAD_TEAM => $lng->txt("exc_type_upload_team"),
-			ilExAssignment::TYPE_TEXT => $lng->txt("exc_type_text")
+			ilExAssignment::TYPE_TEXT => $lng->txt("exc_type_text"),
+			ilExAssignment::TYPE_VOTIER => $lng->txt("exc_type_votier")
 		);
 		if(!$ilSetting->get('disable_wsp_blogs'))
 		{
@@ -381,7 +382,7 @@ class ilExAssignmentEditorGUI
 				}				 
 			}
 			else
-			{			
+			{	
 				if($time_deadline_ext && $time_deadline_ext < $time_deadline)
 				{
 					$a_form->getItemByPostVar("deadline2")
