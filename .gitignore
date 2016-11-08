@@ -20,9 +20,6 @@ db_template_writer.php
 .svn
 
 
-# /Customizing/
-/Customizing/global
-
 # /Modules/BookingManager/js/
 
 # /Modules/Chatroom/classes/admintasks/
