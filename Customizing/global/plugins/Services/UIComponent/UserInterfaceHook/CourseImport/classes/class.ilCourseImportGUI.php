@@ -231,6 +231,8 @@ class ilCourseImportGUI {
 
 		// Run
 		foreach ($data->children(self::XML_PREFIX, true) as $item) {
+            $type = $item->type->__toString();
+            //if type grp bla else{
 			$ref_id = $item->refId->__toString() ? (int) $item->refId->__toString() : 0;
 			$course = new ilObjCourse($ref_id);
 			//$course->setTitle(ilUtil::stripSlashes($_POST['name_input']));
