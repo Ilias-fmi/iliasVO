@@ -115,9 +115,9 @@ class ilCourseImportValidator {
 				$this->last_error .= sprintf($this->pl->txt(self::ERROR_PARENT_NOT_FOUND), $hierarchy);
 			} else {
 				//parent is category
-				if ($hierarchy != 1 && ilObject2::_lookupType($hierarchy, true) != 'cat') {
-					$this->last_error .= sprintf($this->pl->txt(self::ERROR_PARENT_NOT_CATEGORY), $hierarchy);
-				}
+				//if ($hierarchy != 1 && ilObject2::_lookupType($hierarchy, true) != 'cat') {
+				//	$this->last_error .= sprintf($this->pl->txt(self::ERROR_PARENT_NOT_CATEGORY), $hierarchy);
+				//}
 			}
 
 			//existing parent id for references

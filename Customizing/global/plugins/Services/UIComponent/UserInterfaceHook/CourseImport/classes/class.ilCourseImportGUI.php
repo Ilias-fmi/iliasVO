@@ -5,6 +5,7 @@ require_once './Modules/CourseReference/classes/class.ilObjCourseReference.php';
 require_once './Services/Object/classes/class.ilObject2.php';
 require_once './Modules/Course/classes/class.ilCourseParticipants.php';
 require_once './Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseImport/classes/class.ilCourseImportValidator.php';
+require_once './Services/Form/classes/class.ilTextInputGUI.php';
 
 /**
  * Class ilCourseImportGUI
@@ -55,6 +56,9 @@ class ilCourseImportGUI {
 	 * @var array
 	 */
 	protected $courses;
+
+    protected $name_input;
+    protected $date_start_input;
 
 
 	/**
@@ -151,11 +155,18 @@ class ilCourseImportGUI {
 		$form->setId('crs_import');
 		$form->setFormAction($this->ctrl->getFormAction($this));
 
+        $this->name_input = new ilTextInputGUI($this->pl->txt('name_input'), 'name_input');
+        //$this->date_start_input = new ilDateTimeInputGUI($this->pl->txt('date_start_input'),'date_start_input');
+
 		$file_input = new ilFileInputGUI($this->pl->txt('file_input'), 'file_input');
 		$file_input->setRequired(true);
 		$file_input->setSuffixes(array( self::TYPE_XML, self::TYPE_XLSX ));
 
+        //$form->addItem($this->name_input);
+        //$form->addItem($this->date_start_input);
+
 		$form->addItem($file_input);
+        $form->addCommandButton('saveForm', $this->pl->txt('new_course'));
 		$form->addCommandButton('saveForm', $this->pl->txt('import_courses'));
 
 		return $form;
@@ -186,6 +197,7 @@ class ilCourseImportGUI {
 						$this->ctrl->redirect($this);
 					}
 					$this->createCoursesFromXMLString($ilCourseImportExcelConverter->getXmlText());
+                  //  $ilCourseImportExcelConverter->getXml();
 					break;
 			}
 
@@ -221,7 +233,8 @@ class ilCourseImportGUI {
 		foreach ($data->children(self::XML_PREFIX, true) as $item) {
 			$ref_id = $item->refId->__toString() ? (int) $item->refId->__toString() : 0;
 			$course = new ilObjCourse($ref_id);
-			$course->setTitle($item->title->__toString());
+			//$course->setTitle(ilUtil::stripSlashes($_POST['name_input']));
+            $course->setTitle($item->title->__toString());
 			if ($description = $item->description->__toString()) {
 				$course->setDescription($description);
 			}
