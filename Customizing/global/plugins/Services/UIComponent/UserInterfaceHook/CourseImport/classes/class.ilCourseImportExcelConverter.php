@@ -62,8 +62,8 @@ class ilCourseImportExcelConverter {
 
 		$dom = dom_import_simplexml($xml)->ownerDocument;
 		$dom->formatOutput = true;
-        echo $dom->saveXML();
 		$this->setXmlText($dom->saveXML());
+		$dom->save("./Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseImport/resources/convertedXLSX.xml");
 	}
 
 
@@ -160,7 +160,7 @@ class ilCourseImportExcelConverter {
 			12 => 'courseInscriptionBeginningTime',
 			13 => 'courseInscriptionEndDate',
 			14 => 'courseInscriptionEndTime',
-            15 => 'type'
+			//15 => 'type'
 		);
 
 		return $map[$i];
@@ -187,7 +187,7 @@ class ilCourseImportExcelConverter {
 			12 => 'Kurs Einschreibung Startzeit',
 			13 => 'Kurs Einschreibung Enddatum',
 			14 => 'Kurs Einschreibung Endzeit',
-            15 => 'Typ'
+			//15 => 'Typ'
 		);
 	}
 
