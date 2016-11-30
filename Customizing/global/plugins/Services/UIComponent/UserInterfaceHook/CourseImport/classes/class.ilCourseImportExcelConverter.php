@@ -89,6 +89,7 @@ class ilCourseImportExcelConverter {
 
 		$course = $xml->addChild('ns1:ns1:course', null);
 		foreach ($array as $i => $dat) {
+            if ($i == 15) $course->addChild('ns1:ns1:' . $this->getMapping($i), $dat ? htmlspecialchars($dat) : 0);
 			if ($i > 8 || $dat === NULL) {
 				continue;
 			}
@@ -120,6 +121,7 @@ class ilCourseImportExcelConverter {
 				$courseInscriptionTimeframe->addChild('ns1:ns1:' . $this->getMapping(14), date(self::TIME_FORMAT, strtotime(str_replace('/', '.', $array[14]))));
 			}
 		}
+
 	}
 
 
@@ -160,7 +162,7 @@ class ilCourseImportExcelConverter {
 			12 => 'courseInscriptionBeginningTime',
 			13 => 'courseInscriptionEndDate',
 			14 => 'courseInscriptionEndTime',
-			//15 => 'type'
+			15 => 'type'
 		);
 
 		return $map[$i];
@@ -187,7 +189,7 @@ class ilCourseImportExcelConverter {
 			12 => 'Kurs Einschreibung Startzeit',
 			13 => 'Kurs Einschreibung Enddatum',
 			14 => 'Kurs Einschreibung Endzeit',
-			//15 => 'Typ'
+			15 => 'Typ'
 		);
 	}
 

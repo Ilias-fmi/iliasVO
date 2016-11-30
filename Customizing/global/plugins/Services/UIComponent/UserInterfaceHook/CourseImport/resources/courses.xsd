@@ -57,6 +57,9 @@ elementFormDefault="qualified">
 
             <!-- boolean whether direct welcome mail is activated or not => allowed values: true | false -->
             <xs:element name="welcomeMail" type="xs:boolean" default="false" minOccurs="0" maxOccurs="1"/>
+			
+			<!-- String "grp" or "crs" whether to create Course or Group with given data => allowed values: grp | crs -->
+			<xs:element name="type" type="xs:string" default="crs" minOccurs="0" maxOccurs="1"/>
 
             <!-- Date and time when the course begins -->
             <xs:element name="courseTimeframe" minOccurs="0" maxOccurs="1">
