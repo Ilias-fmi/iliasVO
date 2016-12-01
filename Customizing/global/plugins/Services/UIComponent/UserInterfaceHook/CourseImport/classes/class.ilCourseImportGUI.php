@@ -1,6 +1,7 @@
 <?php
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once './Modules/Course/classes/class.ilObjCourse.php';
+require_once './Modules/Group/classes/class.ilObjGroup.php';
 require_once './Modules/CourseReference/classes/class.ilObjCourseReference.php';
 require_once './Services/Object/classes/class.ilObject2.php';
 require_once './Modules/Course/classes/class.ilCourseParticipants.php';
@@ -234,17 +235,16 @@ class ilCourseImportGUI {
 		foreach ($data->children(self::XML_PREFIX, true) as $item) {
             $type = $item->type->__toString();
             if($type == 'grp'){
-                //createGroup();
                 //set ID, title, Description
                 $ref_id = $item->refId->__toString() ? (int)$item->refId->__toString() : 0;
                 $group = new ilObjGroup($ref_id);
                 $group->setTitle($item->title->__toString());
                 $group->setGroupType(GRP_TYPE_OPEN);
-                if ($description = $item->description->__toString()) {
-                    $group->setDescription($description);
+              if ($description = $item->description->__toString()) {
+                    $group->setInformation($description);
                 }
                 //create/update
-                $hierarchy_id = (int)$item->hierarchy;
+               $hierarchy_id = (int)$item->hierarchy;
                 if ($ref_id = $group->getRefId()) {
                     $group->update();
                     $parent_id = $this->tree->getParentId($ref_id);
@@ -261,6 +261,25 @@ class ilCourseImportGUI {
                     $group->setPermissions($hierarchy_id);
                     $this->courses['created'] .= ilObject2::_lookupTitle(ilObject2::_lookupObjId($hierarchy_id)) . ' - ' . $group->getTitle() . '<br>';
                 }
+
+                //set admins
+//                $participants = ilGroupParticipants::_getInstanceByObjId($group->getId());
+//                $admins = $item->courseAdmins->__toString() ? explode(',', $item->courseAdmins->__toString()) : array();
+//                $admin_ids = array();
+//                foreach ($admins as $a) {
+//                    $admin_ids[] = ilObjUser::_lookupId($a);
+//                }
+//                $existing_admins = $participants->getAdmins();
+//
+//                foreach (array_diff($admin_ids, $existing_admins) as $add) {
+//                    $participants->add($add, IL_GRP_ADMIN);
+//                }
+//                foreach (array_diff($existing_admins, $admin_ids) as $rm) {
+//                    $participants->delete($rm);
+//                }
+//
+//                $group->setOwner(ilObjUser::_lookupId($admins[0]));
+//                $group->updateOwner();
 
             }else {
                 //Create Course

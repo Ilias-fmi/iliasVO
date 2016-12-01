@@ -105,8 +105,8 @@ class ilCourseImportValidator {
 				if (!ilObject2::_exists($ref_id, true)) {
 					$this->last_error .= sprintf($this->pl->txt(self::ERROR_REF_ID_NOT_FOUND), $ref_id);
 				} elseif (ilObject2::_lookupType($ref_id, true) != 'crs') {
-					$this->last_error .= sprintf($this->pl->txt(self::ERROR_WRONG_OBJECT_TYPE), $ref_id, ilObject2::_lookupType($ref_id, true));
-				}
+                    $this->last_error .= sprintf($this->pl->txt(self::ERROR_WRONG_OBJECT_TYPE), $ref_id, ilObject2::_lookupType($ref_id, true));
+                }
 			}
 
 			//existing parent id
