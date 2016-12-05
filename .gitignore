@@ -378,3 +378,4 @@ db_template_writer.php
 !/dicto/results/README.md
 override.php
 virtual-data
+/Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseImport/nbproject/private/

@@ -38,6 +38,7 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
 			$this->ctrl->setParameterByClass('ilcourseimportgui', 'ref_id', $_GET['ref_id']);
 			$link = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGUI'));
 			$tabs->addTab('course_import', $this->pl->txt('tab_course_import'), $link);
+                        $tabs->addTab("course_import_GUI", $this->pl->txt('tab_course_import_GUI'), "test");
 		}
 	}
 
