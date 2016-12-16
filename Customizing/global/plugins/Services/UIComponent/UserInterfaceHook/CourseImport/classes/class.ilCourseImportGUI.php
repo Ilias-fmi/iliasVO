@@ -158,14 +158,11 @@ class ilCourseImportGUI {
 		$form->setFormAction($this->ctrl->getFormAction($this));
 
         $this->name_input = new ilTextInputGUI($this->pl->txt('name_input'), 'name_input');
-        //$this->date_start_input = new ilDateTimeInputGUI($this->pl->txt('date_start_input'),'date_start_input');
+
 
 		$file_input = new ilFileInputGUI($this->pl->txt('file_input'), 'file_input');
 		$file_input->setRequired(true);
 		$file_input->setSuffixes(array( self::TYPE_XML, self::TYPE_XLSX ));
-
-        //$form->addItem($this->name_input);
-        //$form->addItem($this->date_start_input);
 
 		$form->addItem($file_input);
         $form->addCommandButton('saveForm', $this->pl->txt('new_course'));

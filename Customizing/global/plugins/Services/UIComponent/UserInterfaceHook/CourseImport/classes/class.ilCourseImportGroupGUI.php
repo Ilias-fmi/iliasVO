@@ -117,14 +117,14 @@ class ilCourseImportGroupGUI
      */
     protected function initForm() {
         $form = new ilPropertyFormGUI();
-        $form->setTitle($this->pl->txt('form_title'));
+        $form->setTitle($this->pl->txt('form_title_management'));
         $form->setId('crs_import');
         $form->setFormAction($this->ctrl->getFormAction($this));
 
         $this->name_input = new ilTextInputGUI($this->pl->txt('name_input'), 'name_input');
 
         $form->addItem($this->name_input);
-        $form->addCommandButton('saveForm', $this->pl->txt('new_course'));
+        $form->addCommandButton('saveForm', $this->pl->txt('save_settings'));
 
         return $form;
     }

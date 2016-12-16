@@ -1,6 +1,10 @@
 tab_course_import#:#Excel-/XML-Kursimport
+tab_course_management#:#Kurs Management
+save_settings#:#Speichern
+name_input#:#Titel
 back#:#Zurück
 form_title#:#Excel-/XML-Kursimport
+form_title_management#:#Kurs Management
 file_input#:#Excel-/XML-Datei Hochladen
 import_courses#:#Kurse Importieren
 error_xsd#:#XSD Validierung: <br>%s<br>Line: %s<br><br>
