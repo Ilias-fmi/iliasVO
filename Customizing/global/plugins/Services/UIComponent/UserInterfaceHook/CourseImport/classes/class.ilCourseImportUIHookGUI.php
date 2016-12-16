@@ -40,7 +40,6 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
             $link = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGUI'));
             $link1 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI'));
 			$tabs->addTab('course_import', $this->pl->txt('tab_course_import'), $link);
-
             $tabs->addTab('course_import', $this->pl->txt('tab_course_import'), $link1);
 
         }

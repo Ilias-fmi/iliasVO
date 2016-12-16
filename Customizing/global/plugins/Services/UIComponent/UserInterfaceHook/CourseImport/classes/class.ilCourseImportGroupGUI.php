@@ -1,4 +1,5 @@
 <?php
+require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 
 /**
  * Created by PhpStorm.
@@ -50,6 +51,38 @@ class ilCourseImportGroupGUI
         $this->ilLocator = $ilLocator;
         $this->pl = ilCourseImportPlugin::getInstance();
     }
+
+    protected function prepareOutput() {
+        $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
+        $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
+            'iladministrationgui',
+            'ilobjcourseadministrationgui',
+        )));
+        $this->setTitleAndIcon();
+        $this->setLocator();
+    }
+
+    protected function setTitleAndIcon() {
+        $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
+        $this->tpl->setTitle($this->lng->txt('obj_crss'));
+        $this->tpl->setDescription($this->lng->txt('obj_crss_desc'));
+    }
+
+    /**
+     * invoked by prepareOutput
+     */
+    protected function setLocator() {
+        $this->ctrl->setParameterByClass("ilobjsystemfoldergui", "ref_id", SYSTEM_FOLDER_ID);
+        $this->ilLocator->addItem($this->lng->txt("administration"), $this->ctrl->getLinkTargetByClass(array(
+            "iladministrationgui",
+            "ilobjsystemfoldergui",
+        ), ""));
+        $this->ilLocator->addItem($this->lng->txt('obj_crss'), $this->ctrl->getLinkTargetByClass(array(
+            'iladministrationgui',
+            'ilobjcourseadministrationgui',
+        )));
+        $this->tpl->setLocator();
+    }
     /**
      *
      */
@@ -79,7 +112,6 @@ class ilCourseImportGroupGUI
         $this->tpl->setContent($form->getHTML());
     }
 
-
     /**
      * @return ilPropertyFormGUI
      */
@@ -91,18 +123,15 @@ class ilCourseImportGroupGUI
 
         $this->name_input = new ilTextInputGUI($this->pl->txt('name_input'), 'name_input');
 
-
-       // $file_input = new ilFileInputGUI($this->pl->txt('file_input'), 'file_input');
-       // $file_input->setRequired(true);
-        //// $file_input->setSuffixes(array( self::TYPE_XML, self::TYPE_XLSX ));
-
         $form->addItem($this->name_input);
-
-
-        //$form->addItem($file_input);
         $form->addCommandButton('saveForm', $this->pl->txt('new_course'));
-        //$form->addCommandButton('saveForm', $this->pl->txt('import_courses'));
 
         return $form;
+    }
+    protected function checkAccess() {
+        global $ilAccess, $ilErr;
+        if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {
+            $ilErr->raiseError($this->lng->txt("no_permission"), $ilErr->WARNING);
+        }
     }
 }
