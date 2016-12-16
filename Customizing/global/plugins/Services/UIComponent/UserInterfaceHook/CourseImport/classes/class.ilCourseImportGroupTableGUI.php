@@ -1,16 +1,15 @@
 <?php
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
-
+require_once './Services/Table/classes/class.ilTableGUI.php';
 /**
  * Created by PhpStorm.
  * User: Manuel
- * Date: 05.12.2016
- * Time: 15:54
- * @ilCtrl_IsCalledBy ilCourseImportGroupGUI: ilUIPluginRouterGUI
- * @ilCtrl_Calls      ilCourseImportGroupGUI: ilObjCourseAdministrationGUI
- *
+ * Date: 16.12.2016
+ * Time: 13:50
+ * @ilCtrl_IsCalledBy ilCourseImportGroupTableGUI: ilUIPluginRouterGUI
+ * @ilCtrl_Calls      ilCourseImportGroupTableGUI: ilObjCourseAdministrationGUI
  */
-class ilCourseImportGroupGUI
+class ilCourseImportGroupTableGUI
 {
     /**
      * @var ilCtrl
@@ -36,12 +35,15 @@ class ilCourseImportGroupGUI
      * @var ilLanguage
      */
     protected $lng;
+
+    protected $course_table;
     /**
      * @var ilTree
      */
     protected $tree;
 
-    public function __construct() {
+    public function __construct()
+    {
         global $tree, $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
         $this->tree = $tree;
         $this->lng = $lng;
@@ -52,7 +54,8 @@ class ilCourseImportGroupGUI
         $this->pl = ilCourseImportPlugin::getInstance();
     }
 
-    protected function prepareOutput() {
+    protected function prepareOutput()
+    {
         $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
             'iladministrationgui',
@@ -62,7 +65,8 @@ class ilCourseImportGroupGUI
         $this->setLocator();
     }
 
-    protected function setTitleAndIcon() {
+    protected function setTitleAndIcon()
+    {
         $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
         $this->tpl->setTitle($this->lng->txt('obj_crss'));
         $this->tpl->setDescription($this->lng->txt('obj_crss_desc'));
@@ -71,7 +75,8 @@ class ilCourseImportGroupGUI
     /**
      * invoked by prepareOutput
      */
-    protected function setLocator() {
+    protected function setLocator()
+    {
         $this->ctrl->setParameterByClass("ilobjsystemfoldergui", "ref_id", SYSTEM_FOLDER_ID);
         $this->ilLocator->addItem($this->lng->txt("administration"), $this->ctrl->getLinkTargetByClass(array(
             "iladministrationgui",
@@ -83,10 +88,12 @@ class ilCourseImportGroupGUI
         )));
         $this->tpl->setLocator();
     }
+
     /**
      *
      */
-    public function executeCommand() {
+    public function executeCommand()
+    {
         $this->checkAccess();
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
@@ -103,11 +110,11 @@ class ilCourseImportGroupGUI
     }
 
 
-
     /**
      * default command
      */
-    protected function view() {
+    protected function view()
+    {
         $form = $this->initForm();
         $this->tpl->setContent($form->getHTML());
     }
@@ -115,20 +122,25 @@ class ilCourseImportGroupGUI
     /**
      * @return ilPropertyFormGUI
      */
-    protected function initForm() {
+    protected function initForm()
+    {
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->pl->txt('form_title_management'));
         $form->setId('crs_management');
         $form->setFormAction($this->ctrl->getFormAction($this));
 
-        $this->name_input = new ilTextInputGUI($this->pl->txt('name_input'), 'name_input');
+        $text_field = new ilTextInputGUI('text_field');
 
-        $form->addItem($this->name_input);
+        //$this->course_table = new ilTableGUI();
+
+        $form->addItem($text_field);
         $form->addCommandButton('saveForm', $this->pl->txt('save_settings'));
 
         return $form;
     }
-    protected function checkAccess() {
+
+    protected function checkAccess()
+    {
         global $ilAccess, $ilErr;
         if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {
             $ilErr->raiseError($this->lng->txt("no_permission"), $ilErr->WARNING);
