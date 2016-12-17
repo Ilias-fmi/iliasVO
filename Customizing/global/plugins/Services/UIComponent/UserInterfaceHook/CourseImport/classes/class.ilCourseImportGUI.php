@@ -102,6 +102,7 @@ class ilCourseImportGUI {
 	 * set title, description, icon, backtarget
 	 */
 	protected function prepareOutput() {
+
 		$this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
 		$this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
 			'iladministrationgui',
@@ -165,7 +166,7 @@ class ilCourseImportGUI {
 		$file_input->setSuffixes(array( self::TYPE_XML, self::TYPE_XLSX ));
 
 		$form->addItem($file_input);
-        $form->addCommandButton('saveForm', $this->pl->txt('new_course'));
+        //$form->addCommandButton('saveForm', $this->pl->txt('new_course'));
 		$form->addCommandButton('saveForm', $this->pl->txt('import_courses'));
 
 		return $form;

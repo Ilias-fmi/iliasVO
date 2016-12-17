@@ -1,5 +1,8 @@
 tab_course_import#:#Excel-/XML-Kursimport
-tab_course_management#:#Kurs Management
+tab_course_management#:#Kursauswahl
+tab_course_management_tbl#:#Kurse und Gruppen verwalten
+test_subtab1#:#Kurs suchen
+test_subtab2#:#Kurs ausw&auml;hlen
 save_settings#:#Speichern
 name_input#:#Titel
 back#:#Zurück

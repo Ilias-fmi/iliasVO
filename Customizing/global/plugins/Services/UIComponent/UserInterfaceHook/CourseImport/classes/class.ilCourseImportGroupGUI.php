@@ -54,6 +54,10 @@ class ilCourseImportGroupGUI
 
     protected function prepareOutput() {
         $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
+
+        $this->tabs->addSubTab('course_import1',$this->pl->txt('test_subtab1'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
+        $this->tabs->addSubTab('course_import2',$this->pl->txt('test_subtab2'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
+
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
             'iladministrationgui',
             'ilobjcourseadministrationgui',
