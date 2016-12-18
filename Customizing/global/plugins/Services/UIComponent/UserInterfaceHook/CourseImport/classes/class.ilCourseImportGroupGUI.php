@@ -1,5 +1,7 @@
 <?php
+include_once("./Services/UIComponent/classes/class.ilUIHookPluginGUI.php");
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
+require_once './Services/Database/classes/class.ilDB.php';
 
 /**
  * Created by PhpStorm.
@@ -41,6 +43,8 @@ class ilCourseImportGroupGUI
      */
     protected $tree;
 
+
+
     public function __construct() {
         global $tree, $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
         $this->tree = $tree;
@@ -57,6 +61,8 @@ class ilCourseImportGroupGUI
 
         $this->tabs->addSubTab('course_import1',$this->pl->txt('test_subtab1'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
         $this->tabs->addSubTab('course_import2',$this->pl->txt('test_subtab2'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
+
+        //$this->tabs->clearTargets();
 
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
             'iladministrationgui',
@@ -120,18 +126,39 @@ class ilCourseImportGroupGUI
      * @return ilPropertyFormGUI
      */
     protected function initForm() {
+
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->pl->txt('form_title_management'));
         $form->setId('crs_management');
         $form->setFormAction($this->ctrl->getFormAction($this));
 
-        $this->name_input = new ilTextInputGUI($this->pl->txt('name_input'), 'name_input');
+        $id_input = new ilNumberInputGUI($this->pl->txt('id_input'), 'id_input');
+        $id_input->setRequired(true);
 
-        $form->addItem($this->name_input);
+        $form->addItem($id_input);
         $form->addCommandButton('saveForm', $this->pl->txt('save_settings'));
 
         return $form;
     }
+
+    public function saveForm() {
+        global $ilDB;
+
+        $form = $this->initForm();
+        $form->setValuesByPost();
+
+        if ($form->checkInput()) {
+            $id = $form->getInput('id_input');
+
+            $result = $ilDB->query("SELECT title FROM object_data WHERE obj_id = ".$ilDB->quote($id, "integer"));
+            $output_query = $ilDB->numRows($result);
+        }
+
+        ilUtil::sendSuccess($output_query);
+        $this->view();
+    }
+
+
     protected function checkAccess() {
         global $ilAccess, $ilErr;
         if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {

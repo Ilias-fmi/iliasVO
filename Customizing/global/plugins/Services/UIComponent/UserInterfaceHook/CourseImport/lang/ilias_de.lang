@@ -5,6 +5,7 @@ test_subtab1#:#Kurs suchen
 test_subtab2#:#Kurs ausw&auml;hlen
 save_settings#:#Speichern
 name_input#:#Titel
+id_input#:#Kurs-ID
 back#:#Zurück
 form_title#:#Excel-/XML-Kursimport
 form_title_management#:#Kurs Management
