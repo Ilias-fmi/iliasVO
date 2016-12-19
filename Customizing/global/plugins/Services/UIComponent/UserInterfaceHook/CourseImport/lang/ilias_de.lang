@@ -1,8 +1,14 @@
 tab_course_import#:#Excel-/XML-Kursimport
 tab_course_management#:#Kursauswahl
 tab_course_management_tbl#:#Kurse und Gruppen verwalten
-test_subtab1#:#Kurs suchen
-test_subtab2#:#Kurs ausw&auml;hlen
+course_search#:#Kurs suchen
+course_edit#:#Kurs bearbeiten
+course_title#:#Kursname
+group_title#:#Gruppenname
+group_time#:#Termin
+group_location#:#Raum
+group_tutor#:#Tutor
+group_max_members#:#Max. Mitglieder
 save_settings#:#Speichern
 name_input#:#Titel
 id_input#:#Kurs-ID

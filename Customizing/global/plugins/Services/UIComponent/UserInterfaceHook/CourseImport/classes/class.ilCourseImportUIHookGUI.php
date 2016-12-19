@@ -42,14 +42,14 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
             $this->ctrl->setParameterByClass('ilcourseimportgroupgui', 'ref_id', $_GET['ref_id']);
             $link1 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI'));
 
-            $this->ctrl->setParameterByClass('ilcourseimportgrouptablegui', 'ref_id', $_GET['ref_id']);
-            $link2 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupTableGUI'));
 
-			$tabs->addTab('course_import', $this->pl->txt('tab_course_import'), $link);
+            $tabs->addTab('course_import', $this->pl->txt('tab_course_import'), $link);
 
             $tabs->addTab('course_management', $this->pl->txt('tab_course_management'), $link1);
 
-            $tabs->addTab('course_management_tbl', $this->pl->txt('tab_course_management_tbl'), $link2);
+            //$this->ctrl->setParameterByClass('ilcourseimportgroupdisplaygui', 'ref_id', $_GET['ref_id']);
+            //$link2 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupDisplayGUI'));
+            //$tabs->addTab('course_management_tbl', $this->pl->txt('tab_course_management_tbl'), $link2);
 
         }
 

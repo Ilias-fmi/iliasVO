@@ -1,15 +1,15 @@
 <?php
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
-require_once './Services/Table/classes/class.ilTableGUI.php';
+require_once 'class.ilCourseImportGroupTable.php';
 /**
  * Created by PhpStorm.
  * User: Manuel
  * Date: 16.12.2016
  * Time: 13:50
- * @ilCtrl_IsCalledBy ilCourseImportGroupTableGUI: ilUIPluginRouterGUI
- * @ilCtrl_Calls      ilCourseImportGroupTableGUI: ilObjCourseAdministrationGUI
+ * @ilCtrl_IsCalledBy ilCourseImportGroupDisplayGUI: ilUIPluginRouterGUI
+ * @ilCtrl_Calls      ilCourseImportGroupDisplayGUI: ilObjCourseAdministrationGUI
  */
-class ilCourseImportGroupTableGUI
+class ilCourseImportGroupDisplayGUI
 {
     /**
      * @var ilCtrl
@@ -55,8 +55,12 @@ class ilCourseImportGroupTableGUI
     }
 
     protected function prepareOutput()
-    {
-        $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
+    {   $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
+        $this->ctrl->setParameterByClass('ilcourseimportgroupdisplaygui', 'ref_id', $_GET['ref_id']);
+        $this->ctrl->setParameterByClass('ilcourseimportgroupgui','ref_id',$_GET['ref_id']);
+
+        $this->tabs->addSubTab('course_search',$this->pl->txt('course_search'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
+        $this->tabs->addSubTab('course_edit',$this->pl->txt('course_edit'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupDisplayGUI')));
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
             'iladministrationgui',
             'ilobjcourseadministrationgui',
@@ -115,28 +119,33 @@ class ilCourseImportGroupTableGUI
      */
     protected function view()
     {
-        $form = $this->initForm();
-        $this->tpl->setContent($form->getHTML());
+        $table = $this->initTable();
+        $this->tpl->setContent($table->getHTML());
     }
 
     /**
-     * @return ilPropertyFormGUI
+     * @return ilCourseImportGroupTable
      */
-    protected function initForm()
+    protected function initTable()
     {
-        $form = new ilPropertyFormGUI();
-        $form->setTitle($this->pl->txt('form_title_management'));
-        $form->setId('crs_management');
-        $form->setFormAction($this->ctrl->getFormAction($this));
 
-        $text_field = new ilTextInputGUI('text_field');
+        $table = new ilCourseImportGroupTable($this);
+        $table->setTitle($this->pl->txt('form_title_management'));
+        $table->setId('crs_management');
+        $table->setFormAction($this->ctrl->getFormAction($this));
+        $table->addColumn('Kursname', "", "20%");
+        $table->addColumn('Gruppenname', "", "20%");
+        $table->addColumn('Termin', "", "20%");
+        $table->addColumn('Raum', "", "20%");
+        $table->addColumn('Tutor', "", "10%");
+        $table->addColumn('Max. Mitglieder', "", "10%");
 
-        //$this->course_table = new ilTableGUI();
+        $table->fillRow();
 
-        $form->addItem($text_field);
-        $form->addCommandButton('saveForm', $this->pl->txt('save_settings'));
 
-        return $form;
+        $table->addCommandButton('saveForm', $this->pl->txt('save_settings'));
+
+        return $table;
     }
 
     protected function checkAccess()
