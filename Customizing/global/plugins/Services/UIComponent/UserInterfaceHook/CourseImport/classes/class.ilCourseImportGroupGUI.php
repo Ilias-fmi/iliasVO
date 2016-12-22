@@ -1,5 +1,7 @@
 <?php
 include_once("./Services/UIComponent/classes/class.ilUIHookPluginGUI.php");
+include_once("./Services/UIComponent/Explorer2/classes/class.ilExplorerBaseGUI.php");
+include_once("./Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseImport/classes/class.ilNavigationMenu.php");
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
 
@@ -119,44 +121,14 @@ class ilCourseImportGroupGUI
      * default command
      */
     protected function view() {
-        $form = $this->initForm();
-        $this->tpl->setContent($form->getHTML());
-    }
 
-    /**
-     * @return ilPropertyFormGUI
-     */
-    protected function initForm() {
+        global $tpl;
 
-        $form = new ilPropertyFormGUI();
-        $form->setTitle($this->pl->txt('form_title_management'));
-        $form->setId('crs_management');
-        $form->setFormAction($this->ctrl->getFormAction($this));
-
-        $id_input = new ilNumberInputGUI($this->pl->txt('id_input'), 'id_input');
-        $id_input->setRequired(true);
-
-        $form->addItem($id_input);
-        $form->addCommandButton('saveForm', $this->pl->txt('save_settings'));
-
-        return $form;
-    }
-
-    public function saveForm() {
-        global $ilDB;
-
-        $form = $this->initForm();
-        $form->setValuesByPost();
-
-        if ($form->checkInput()) {
-            $id = $form->getInput('id_input');
-
-            $result = $ilDB->query("SELECT title FROM object_data WHERE obj_id = ".$ilDB->quote($id, "integer"));
-            $output_query = $ilDB->numRows($result);
+        $exp = new ilNavigationMenu("NavigationMenu_id", $this, "showTree");
+        if (!$exp->handleCommand())
+        {
+            $tpl->setContent($exp->getHTML());
         }
-
-        ilUtil::sendSuccess($output_query);
-        $this->view();
     }
 
 
