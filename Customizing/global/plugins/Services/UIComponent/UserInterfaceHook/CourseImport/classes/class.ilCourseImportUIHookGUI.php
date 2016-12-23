@@ -35,7 +35,7 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
         /** @var ilTabsGUI $tabs */
         $tabs = $a_par['tabs'];
 
-        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') && $a_part == 'tabs' ){
+        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') && $a_part == 'tabs' && ilObject::_lookupType($_GET['ref_id'], true) == 'crs'){
 
 
             $this->ctrl->setParameterByClass('ilcourseimportgroupgui', 'ref_id', $_GET['ref_id']);
