@@ -32,9 +32,11 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
 
 	function modifyGUI($a_comp, $a_part, $a_par = array())
 	{
-		if ($_GET["baseClass"] == 'ilRepositoryGUI'&& $a_part == 'tabs' ){
-			/** @var ilTabsGUI $tabs */
-			$tabs = $a_par['tabs'];
+        /** @var ilTabsGUI $tabs */
+        $tabs = $a_par['tabs'];
+
+        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') && $a_part == 'tabs' ){
+
 
             $this->ctrl->setParameterByClass('ilcourseimportgroupgui', 'ref_id', $_GET['ref_id']);
             $link1 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI'));
@@ -42,10 +44,10 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
 
         }
         if ($a_part == 'tabs'&& ilObject::_lookupType($_GET['ref_id'], true) == 'crss'){
-            $tabs1 = $a_par['tabs'];
+
             $this->ctrl->setParameterByClass('ilcourseimportgui', 'ref_id', $_GET['ref_id']);
             $link = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGUI'));
-            $tabs1->addTab('course_import', $this->pl->txt('tab_course_import'), $link);
+            $tabs->addTab('course_import', $this->pl->txt('tab_course_import'), $link);
         }
 
 	}
