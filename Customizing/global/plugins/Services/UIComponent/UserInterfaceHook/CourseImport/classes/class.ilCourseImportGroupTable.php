@@ -17,8 +17,10 @@ class ilCourseImportGroupTable extends ilTable2GUI{
 
         $this->setEnableHeader(true);
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj));
-       // $this->setRowTemplate("tpl.my_row_template.html",
-       //     "Service/MyService");     // could be a Module template, too
+        $this->setRowTemplate('tpl.obj_tbl_rows.html', '.\templates\default');  
+        // could be a Module template, too
+        
+     
     }
 
     /**
@@ -37,7 +39,7 @@ class ilCourseImportGroupTable extends ilTable2GUI{
       //  global $lng, $ilCtrl;
 
 
-        $this->tpl->setVariable('course_title', "Kurs1");
+        $this->tpl->setVariable('COURSE_TITLE', 'Kurs1');
 
 
 
