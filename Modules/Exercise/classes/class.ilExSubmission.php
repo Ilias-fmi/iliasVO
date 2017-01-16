@@ -50,8 +50,7 @@ class ilExSubmission
 		switch($this->assignment->getType())
 		{
 			case ilExAssignment::TYPE_UPLOAD_TEAM:					
-			case ilExAssignment::TYPE_UPLOAD:											
-			case ilExAssignment::TYPE_VOTIER:		
+			case ilExAssignment::TYPE_UPLOAD:		
 				return "File";
 
 			case ilExAssignment::TYPE_BLOG:			

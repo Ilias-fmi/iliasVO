@@ -1,0 +1,9 @@
+select od.title, od.title, ud.login, gs.registration_max_members
+from ilias.object_data od
+join ilias.object_reference obr on od.obj_id = obr.obj_id
+join ilias.obj_members om on om.obj_id = od.obj_id
+join ilias.crs_items ci on ci.obj_id = obr.ref_id
+left join ilias.crs_settings cs on cs.obj_id = obr.obj_id
+left join ilias.grp_settings gs on gs.obj_id = obr.obj_id
+join ilias.usr_data ud on ud.usr_id = om.usr_id
+where (obr.deleted is null) and (om.admin = 1)

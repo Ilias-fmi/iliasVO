@@ -131,8 +131,7 @@ class ilExAssignmentEditorGUI
 		$types = array(
 			ilExAssignment::TYPE_UPLOAD => $lng->txt("exc_type_upload"),
 			ilExAssignment::TYPE_UPLOAD_TEAM => $lng->txt("exc_type_upload_team"),
-			ilExAssignment::TYPE_TEXT => $lng->txt("exc_type_text"),
-			ilExAssignment::TYPE_VOTIER => $lng->txt("exc_type_votier")
+			ilExAssignment::TYPE_TEXT => $lng->txt("exc_type_text")
 		);
 		if(!$ilSetting->get('disable_wsp_blogs'))
 		{
