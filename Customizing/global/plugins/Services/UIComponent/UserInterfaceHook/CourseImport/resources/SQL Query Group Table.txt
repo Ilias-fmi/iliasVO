@@ -7,4 +7,4 @@ left join ilias.crs_settings cs on cs.obj_id = obr.obj_id
 join ilias.grp_settings gs on gs.obj_id = obr.obj_id
 join ilias.usr_data ud on ud.usr_id = om.usr_id
 join ilias.object_description ode on ode.obj_id = obr.obj_id
-where (od.type = 'grp') and (obr.deleted is null) and (om.admin = 1) and (obr.ref_id = 70)
+where (od.type = 'grp') and (obr.deleted is null) and (om.admin = 1) and (ci.parent_id = 67)
