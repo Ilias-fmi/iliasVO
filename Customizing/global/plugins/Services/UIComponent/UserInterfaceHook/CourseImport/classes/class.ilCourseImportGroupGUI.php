@@ -59,20 +59,28 @@ class ilCourseImportGroupGUI
     }
 
     protected function prepareOutput() {
+
+        global $ilLocator, $tpl;
+
         $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
         $this->ctrl->setParameterByClass('ilcourseimportgroupdisplaygui', 'ref_id', $_GET['ref_id']);
+
+        $this->tabs->addTab('course_management', $this->pl->txt('tab_course_management'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
 
         $this->tabs->addSubTab('course_search',$this->pl->txt('course_search'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
         $this->tabs->addSubTab('course_edit',$this->pl->txt('course_edit'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupDisplayGUI')));
         $this->tabs->activateSubTab('course_search');
 
+        $this->ctrl->getRedirectSource();
 
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
             'iladministrationgui',
             'ilobjcourseadministrationgui',
         )));
         $this->setTitleAndIcon();
-        $this->setLocator();
+
+        $ilLocator->addRepositoryItems($_GET['ref_id']);
+        $tpl->setLocator();
     }
 
     protected function setTitleAndIcon() {
@@ -81,21 +89,7 @@ class ilCourseImportGroupGUI
         $this->tpl->setDescription($this->lng->txt('obj_crss_desc'));
     }
 
-    /**
-     * invoked by prepareOutput
-     */
-    protected function setLocator() {
-        $this->ctrl->setParameterByClass("ilobjsystemfoldergui", "ref_id", SYSTEM_FOLDER_ID);
-        $this->ilLocator->addItem($this->lng->txt("administration"), $this->ctrl->getLinkTargetByClass(array(
-            "iladministrationgui",
-            "ilobjsystemfoldergui",
-        ), ""));
-        $this->ilLocator->addItem($this->lng->txt('obj_crss'), $this->ctrl->getLinkTargetByClass(array(
-            'iladministrationgui',
-            'ilobjcourseadministrationgui',
-        )));
-        $this->tpl->setLocator();
-    }
+
     /**
      *
      */

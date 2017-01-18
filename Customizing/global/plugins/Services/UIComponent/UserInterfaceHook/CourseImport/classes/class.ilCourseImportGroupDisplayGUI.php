@@ -55,7 +55,10 @@ class ilCourseImportGroupDisplayGUI
     }
 
     protected function prepareOutput()
-    {   $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
+    {
+        global $ilLocator, $tpl;
+
+        $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
         $this->ctrl->setParameterByClass('ilcourseimportgroupdisplaygui', 'ref_id', $_GET['ref_id']);
         $this->ctrl->setParameterByClass('ilcourseimportgroupgui','ref_id',$_GET['ref_id']);
 
@@ -68,7 +71,9 @@ class ilCourseImportGroupDisplayGUI
             'ilobjcourseadministrationgui',
         )));
         $this->setTitleAndIcon();
-        $this->setLocator();
+
+        $ilLocator->addRepositoryItems($_GET['ref_id']);
+        $tpl->setLocator();
     }
 
     protected function setTitleAndIcon()
@@ -76,23 +81,6 @@ class ilCourseImportGroupDisplayGUI
         $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
         $this->tpl->setTitle($this->lng->txt('obj_crss'));
         $this->tpl->setDescription($this->lng->txt('obj_crss_desc'));
-    }
-
-    /**
-     * invoked by prepareOutput
-     */
-    protected function setLocator()
-    {
-        $this->ctrl->setParameterByClass("ilobjsystemfoldergui", "ref_id", SYSTEM_FOLDER_ID);
-        $this->ilLocator->addItem($this->lng->txt("administration"), $this->ctrl->getLinkTargetByClass(array(
-            "iladministrationgui",
-            "ilobjsystemfoldergui",
-        ), ""));
-        $this->ilLocator->addItem($this->lng->txt('obj_crss'), $this->ctrl->getLinkTargetByClass(array(
-            'iladministrationgui',
-            'ilobjcourseadministrationgui',
-        )));
-        $this->tpl->setLocator();
     }
 
     /**

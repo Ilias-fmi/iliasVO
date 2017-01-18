@@ -33,21 +33,26 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
 	function modifyGUI($a_comp, $a_part, $a_par = array())
 	{
         /** @var ilTabsGUI $tabs */
+        global $ilTabs;
+
         $tabs = $a_par['tabs'];
 
+        // Tab im einzelnen Kurs
         if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') && $a_part == 'tabs' && ilObject::_lookupType($_GET['ref_id'], true) == 'crs'){
-
 
             $this->ctrl->setParameterByClass('ilcourseimportgroupgui', 'ref_id', $_GET['ref_id']);
             $link1 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI'));
             $tabs->addTab('course_management', $this->pl->txt('tab_course_management'), $link1);
 
         }
+
+        //Tab in Administration -> Kurs
         if ($a_part == 'tabs'&& ilObject::_lookupType($_GET['ref_id'], true) == 'crss'){
 
             $this->ctrl->setParameterByClass('ilcourseimportgui', 'ref_id', $_GET['ref_id']);
             $link = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGUI'));
             $tabs->addTab('course_import', $this->pl->txt('tab_course_import'), $link);
+
         }
 
 	}
