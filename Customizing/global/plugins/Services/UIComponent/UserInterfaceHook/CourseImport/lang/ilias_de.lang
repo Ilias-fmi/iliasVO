@@ -14,6 +14,11 @@ group_time#:#Termin
 group_location#:#Raum
 group_tutor#:#Tutor
 group_max_members#:#Max. Mitglieder
+member_edit#:#Mitglieder verschieben
+move_member#:#Verschieben
+group_title#:#Gruppen Name
+member_login#:#Benutzername
+member_description#:#Geben Sie hier den Benutzername des Benutzers sowie den Namen der Gruppe in die der Benutzer verschoben werden soll an.
 save_settings#:#Speichern
 name_input#:#Titel
 id_input#:#Kurs-ID
