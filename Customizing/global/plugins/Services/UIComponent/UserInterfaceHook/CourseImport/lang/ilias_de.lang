@@ -4,6 +4,11 @@ tab_course_management_tbl#:#Kurse und Gruppen verwalten
 course_search#:#Kurs suchen
 course_edit#:#Kurs bearbeiten
 course_title#:#Kursname
+group_create#:#Gruppen erstellen
+group_create_title#:#Gruppen erstellen
+create_groups#:#Erstellen
+group_count#:#Anzahl der Gruppen
+members#:#Maximale Mitgliederanzahl
 group_title#:#Gruppenname
 group_time#:#Termin
 group_location#:#Raum

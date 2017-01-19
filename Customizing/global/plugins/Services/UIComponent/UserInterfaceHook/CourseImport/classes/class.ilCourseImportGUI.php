@@ -166,7 +166,6 @@ class ilCourseImportGUI {
 		$file_input->setSuffixes(array( self::TYPE_XML, self::TYPE_XLSX ));
 
 		$form->addItem($file_input);
-        //$form->addCommandButton('saveForm', $this->pl->txt('new_course'));
 		$form->addCommandButton('saveForm', $this->pl->txt('import_courses'));
 
 		return $form;

@@ -3,6 +3,11 @@ include_once("./Services/UIComponent/classes/class.ilUIHookPluginGUI.php");
 include_once("./Services/UIComponent/Explorer2/classes/class.ilExplorerBaseGUI.php");
 include_once("./Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseImport/classes/class.ilNavigationMenu.php");
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
+require_once './Modules/Group/classes/class.ilObjGroup.php';
+require_once './Services/Object/classes/class.ilObject2.php';
+
+require_once './Services/Form/classes/class.ilNumberInputGUI.php';
+require_once './Services/Form/classes/class.ilTextInputGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
 
 /**
@@ -16,6 +21,8 @@ require_once './Services/Database/classes/class.ilDB.php';
  */
 class ilCourseImportGroupGUI
 {
+    const IMPORT_SUCCEEDED = 'import_succeeded';
+    const IMPORT_FAILED = 'import_failed';
     /**
      * @var ilCtrl
      */
@@ -45,6 +52,9 @@ class ilCourseImportGroupGUI
      */
     protected $tree;
 
+    protected $courses;
+    protected $members;
+    protected $group_count;
 
 
     public function __construct() {
@@ -67,15 +77,15 @@ class ilCourseImportGroupGUI
 
         $this->tabs->addTab('course_management', $this->pl->txt('tab_course_management'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
 
-        $this->tabs->addSubTab('course_search',$this->pl->txt('course_search'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
+        $this->tabs->addSubTab('group_create',$this->pl->txt('group_create'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
         $this->tabs->addSubTab('course_edit',$this->pl->txt('course_edit'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupDisplayGUI')));
-        $this->tabs->activateSubTab('course_search');
+        $this->tabs->activateSubTab('group_create');
 
         $this->ctrl->getRedirectSource();
 
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
-            'iladministrationgui',
-            'ilobjcourseadministrationgui',
+            'ilrepositorygui',
+            'ilrepositorygui',
         )));
         $this->setTitleAndIcon();
 
@@ -116,13 +126,52 @@ class ilCourseImportGroupGUI
      */
     protected function view() {
 
-        global $tpl;
+        $form = $this->initForm();
+        $this->tpl->setContent($form->getHTML());
 
-        $exp = new ilNavigationMenu("NavigationMenu_id", $this, "showTree");
-        if (!$exp->handleCommand())
-        {
-            $tpl->setContent($exp->getHTML());
-        }
+    }
+
+    protected function initForm(){
+        $form = new ilPropertyFormGUI();
+        $form->setTitle($this->pl->txt('group_create_title'));
+        $form->setId('group_create');
+        $form->setFormAction($this->ctrl->getFormAction($this));
+
+        $this->group_count = new ilNumberInputGUI($this->pl->txt('group_count'), 'group_count');
+        $this->members = new ilNumberInputGUI($this->pl->txt('members'), 'members');
+
+        $this->group_count->setRequired(true);
+        $this->members->setRequired(true);
+
+        $form->addItem($this->group_count);
+        $form->addItem($this->members);
+        $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
+
+        return $form;
+    }
+
+    protected function createGroups()
+    {
+        $form = $this->initForm();
+        $form->setValuesByPost();
+        $number = $this->group_count->getValue();
+        $members = $this->members->getValue();
+
+            for ($n = 1; $n <= $number; $n++) {
+                $group = new ilObjGroup();
+                //TODO: getNumberOfExistingGroups in Course($_GET['ref_id']) and Titel = n + numExisting !
+                $group->setTitle('Gruppe'.$n);
+                $group->setGroupType(GRP_TYPE_OPEN);
+                $group->setMaxMembers($members);
+                $group->enableMembershipLimitation(true);
+                $group->create();
+                $group->createReference();
+                $group->putInTree($_GET['ref_id']);
+                $group->setPermissions($_GET['ref_id']);
+                $this->courses['created'] .= ilObject2::_lookupTitle(ilObject2::_lookupObjId($_GET['ref_id'])) . ' - ' . $group->getTitle() . '<br>';
+            }
+        ilUtil::sendSuccess(sprintf($this->pl->txt(self::IMPORT_SUCCEEDED), $this->courses['created'], $this->courses['updated'], $this->courses['refs'], $this->courses['refs_del']));
+
     }
 
 
