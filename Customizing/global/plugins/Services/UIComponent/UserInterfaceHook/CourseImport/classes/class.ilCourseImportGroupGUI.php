@@ -50,10 +50,12 @@ class ilCourseImportGroupGUI
      * @var ilTree
      */
     protected $tree;
+    
 
     protected $courses;
     protected $members;
     protected $group_count;
+    protected $number_grp;
 
 
     public function __construct() {
@@ -153,13 +155,47 @@ class ilCourseImportGroupGUI
 
     protected function createGroups()
     {
+        
+        global $ilDB;
+        
+         
+        
+        
+        
+      
+        
         $created = false;
         $form = $this->initForm();
         $form->setValuesByPost();
         $number = $this->group_count->getValue();
         $members = $this->members->getValue();
+        
+        $query = "select count(*)
+                  from ilias.object_data od
+                  join ilias.object_reference obr on od.obj_id = obr.obj_id
+                  where (od.type = 'grp') and (obr.deleted is null)";
 
-            for ($n = 1; $n <= $number; $n++) {
+       $results = $ilDB->query($query);
+       
+                   while ($record = $ilDB->fetchObject($results)){
+                    print_r ($record);
+                }
+          
+  
+
+          
+       
+        $nn = 1;
+
+        if ($record > 0){
+
+        $nn = $record;
+
+        }
+       
+     
+
+            for ($n = $nn ; $n <= $number; $n++) {
                 $group = new ilObjGroup();
                 //TODO: getNumberOfExistingGroups in Course($_GET['ref_id']) and Titel = n + numExisting !
                 $group->setTitle('Gruppe'.$n);
