@@ -36,3 +36,5 @@ error_container_ref#:#Objekt mit Ref-ID (references) ist nicht vom Typ "Containe
 error_large_file#:#Die hochgeladene Datei ist ungewöhnlich gross. Bitte überprüfen Sie, ob sich nach den gefüllte Zeilen der Excel-Datei noch leere Zeilen befinden und löschen Sie diese gegebenfalls.
 import_succeeded#:#Kurse neu angelegt:<br>%s<br>Kurse aktualisiert:<br>%s<br>Kurs-Referenzen angelegt:<br>%s<br>Kurs-Referenzen gelöscht:<br>%s
 import_failed#:#Importieren der Kurse fehlgeschlagen. Die Validierung ergab folgende Fehlermeldungen:<br><br>
+creation_succeeded#:#Gruppen neu angelegt:<br>%s<br>
+creation_failed#:#Erstellen der Gruppen fehlgeschlagen, überprüfen Sie ihre Eingaben.

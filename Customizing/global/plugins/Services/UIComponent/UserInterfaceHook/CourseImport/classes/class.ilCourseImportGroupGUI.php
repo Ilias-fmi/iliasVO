@@ -5,7 +5,6 @@ include_once("./Customizing/global/plugins/Services/UIComponent/UserInterfaceHoo
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once './Modules/Group/classes/class.ilObjGroup.php';
 require_once './Services/Object/classes/class.ilObject2.php';
-
 require_once './Services/Form/classes/class.ilNumberInputGUI.php';
 require_once './Services/Form/classes/class.ilTextInputGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
@@ -21,8 +20,8 @@ require_once './Services/Database/classes/class.ilDB.php';
  */
 class ilCourseImportGroupGUI
 {
-    const IMPORT_SUCCEEDED = 'import_succeeded';
-    const IMPORT_FAILED = 'import_failed';
+    const CREATION_SUCCEEDED = 'creation_succeeded';
+    const CREATION_FAILED = 'creation_failed';
     /**
      * @var ilCtrl
      */
@@ -74,11 +73,13 @@ class ilCourseImportGroupGUI
 
         $this->ctrl->setParameterByClass('ilobjcourseadministrationgui', 'ref_id', $_GET['ref_id']);
         $this->ctrl->setParameterByClass('ilcourseimportgroupdisplaygui', 'ref_id', $_GET['ref_id']);
+        $this->ctrl->setParameterByClass('ilcourseimportmembergui','ref_id',$_GET['ref_id']);
 
         $this->tabs->addTab('course_management', $this->pl->txt('tab_course_management'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
 
         $this->tabs->addSubTab('group_create',$this->pl->txt('group_create'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
         $this->tabs->addSubTab('course_edit',$this->pl->txt('course_edit'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupDisplayGUI')));
+        $this->tabs->addSubTab('member_edit',$this->pl->txt('member_edit'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportMemberGUI')));
         $this->tabs->activateSubTab('group_create');
 
         $this->ctrl->getRedirectSource();
@@ -152,6 +153,7 @@ class ilCourseImportGroupGUI
 
     protected function createGroups()
     {
+        $created = false;
         $form = $this->initForm();
         $form->setValuesByPost();
         $number = $this->group_count->getValue();
@@ -169,9 +171,13 @@ class ilCourseImportGroupGUI
                 $group->putInTree($_GET['ref_id']);
                 $group->setPermissions($_GET['ref_id']);
                 $this->courses['created'] .= ilObject2::_lookupTitle(ilObject2::_lookupObjId($_GET['ref_id'])) . ' - ' . $group->getTitle() . '<br>';
+                $created = true;
             }
-        ilUtil::sendSuccess(sprintf($this->pl->txt(self::IMPORT_SUCCEEDED), $this->courses['created'], $this->courses['updated'], $this->courses['refs'], $this->courses['refs_del']));
-
+            if($created) {
+                ilUtil::sendSuccess(sprintf($this->pl->txt(self::CREATION_SUCCEEDED), $this->courses['created'], $this->courses['updated'], $this->courses['refs'], $this->courses['refs_del']));
+            }else {
+                ilUtil::sendFailure($this->pl->txt(self::CREATION_FAILED), true);
+            }
     }
 
 
