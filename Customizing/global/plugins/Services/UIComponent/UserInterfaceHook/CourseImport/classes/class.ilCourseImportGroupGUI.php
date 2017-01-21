@@ -163,41 +163,45 @@ class ilCourseImportGroupGUI
         
         
       
-        
+        $group_number = array();
         $created = false;
         $form = $this->initForm();
         $form->setValuesByPost();
         $number = $this->group_count->getValue();
         $members = $this->members->getValue();
         
-        $query = "select count(*)
+        // Query schaut leider erst nach Anzahl aller Gruppen, besser wäre nach Anzahl Gruppen im jeweiligen Kurs
+        //TODO
+        
+        $query = "select od.title as 'Übungsruppe'
                   from ilias.object_data od
                   join ilias.object_reference obr on od.obj_id = obr.obj_id
                   where (od.type = 'grp') and (obr.deleted is null)";
 
        $results = $ilDB->query($query);
        
-                   while ($record = $ilDB->fetchObject($results)){
-                    print_r ($record);
+                   while ($record = $ilDB->fetchAssoc($results)){
+                   array_push($group_number,$record);
                 }
           
   
 
-          
+          $result = count($group_number);
        
         $nn = 1;
+        
+      
 
-        if ($record > 0){
+        if ($result > 0){
 
-        $nn = $record;
-
-        }
+       $nn = $result;
+       $number = $number + $nn - 1;
+       }
        
      
 
             for ($n = $nn ; $n <= $number; $n++) {
                 $group = new ilObjGroup();
-                //TODO: getNumberOfExistingGroups in Course($_GET['ref_id']) and Titel = n + numExisting !
                 $group->setTitle('Gruppe'.$n);
                 $group->setGroupType(GRP_TYPE_OPEN);
                 $group->setMaxMembers($members);
