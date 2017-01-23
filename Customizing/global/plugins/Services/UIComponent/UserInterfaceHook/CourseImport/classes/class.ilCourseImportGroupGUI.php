@@ -173,10 +173,11 @@ class ilCourseImportGroupGUI
         // Query schaut leider erst nach Anzahl aller Gruppen, besser wäre nach Anzahl Gruppen im jeweiligen Kurs
         //TODO
         
-        $query = "select od.title as 'Übungsruppe'
+      $query = "select od.title as 'Übungsruppe'
                   from ilias.object_data od
                   join ilias.object_reference obr on od.obj_id = obr.obj_id
-                  where (od.type = 'grp') and (obr.deleted is null)";
+                  join ilias.crs_items crsi on obr.ref_id = crsi.obj_id
+                  where (od.type = 'grp') and (obr.deleted is null) and (crsi.parent_id = '".$_GET['ref_id']."') ";
 
        $results = $ilDB->query($query);
        
@@ -194,6 +195,7 @@ class ilCourseImportGroupGUI
 
         if ($result > 0){
 
+       $result ++;    
        $nn = $result;
        $number = $number + $nn - 1;
        }
@@ -202,7 +204,7 @@ class ilCourseImportGroupGUI
 
             for ($n = $nn ; $n <= $number; $n++) {
                 $group = new ilObjGroup();
-                $group->setTitle('Gruppe'.$n);
+                $group->setTitle('Gruppe '.$n);
                 $group->setGroupType(GRP_TYPE_OPEN);
                 $group->setMaxMembers($members);
                 $group->enableMembershipLimitation(true);
