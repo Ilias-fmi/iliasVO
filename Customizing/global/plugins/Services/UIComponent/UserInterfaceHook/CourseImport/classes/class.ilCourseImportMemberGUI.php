@@ -3,6 +3,8 @@ require_once './Services/Form/classes/class.ilTextInputGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 
+define('IL_GRP_MEMBER',5);
+
 /**
  * Created by PhpStorm.
  * User: Manuel
@@ -44,6 +46,7 @@ class ilCourseImportMemberGUI {
     protected $course_id;
     protected $memberLogin;
     protected $groupTitle;
+    protected $destinationTitle;
 
     public function __construct() {
         global $tree, $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
@@ -114,7 +117,6 @@ class ilCourseImportMemberGUI {
 
         $form = $this->initForm();
         $this->tpl->setContent($form->getHTML());
-
     }
 
     protected function initForm(){
@@ -126,49 +128,95 @@ class ilCourseImportMemberGUI {
 
         $this->memberLogin = new ilTextInputGUI($this->pl->txt('member_login'), 'member_login');
         $this->groupTitle = new ilTextInputGUI($this->pl->txt('group_title'), 'group_title');
+        $this->destinationTitle = new ilTextInputGUI($this->pl->txt('destination_title'), 'destination_title');
+        $this->memberLogin->setRequired(true);
+        $this->groupTitle->setRequired(true);
+        $this->destinationTitle->setRequired(true);
 
 
 
         $form->addItem($this->memberLogin);
         $form->addItem($this->groupTitle);
+        $form->addItem($this->destinationTitle);
         $form->addCommandButton('moveMember', $this->pl->txt('move_member'));
 
         return $form;
     }
 
     protected function moveMember(){
+        global $ilDB;
+
         $form = $this->initForm();
         $form->setValuesByPost();
-        $field1 = $this->memberLogin->getValue();
-        $field2 = $this->groupTitle->getValue();
-        var_dump($field1);
-        var_dump($field2);
-
-        $member_login = "root";
-        $group_title = "Gruppe1";
-
-        var_dump($member_login);
-        var_dump($group_title);
+        $member_login = $this->memberLogin->getValue();
+        $group_title = $this->groupTitle->getValue();
+        $destination_title = $this->destinationTitle->getValue();
 
 
         $member_id = $this->getMemberIdByLogin($member_login);
         $group_id = $this->getGroupIdByTitle($group_title,$this->course_id);
-        var_dump($member_id);
-        var_dump($group_id);
+        $destination_id = $this->getGroupIdByTitle($destination_title,$this->course_id);
+
+        $ref = $destination_id[0];
+        $ref2 = $group_id[0];
+
+        $description_dest = "Groupmember of group obj_no." . $ref["obj_id"];
+        $description_source = "Groupmember of group obj_no." . $ref2["obj_id"];
+
+        $role_id_dest = $this->getRoleID($description_dest);
+        $role_id_source = $this->getRoleID($description_source);
+
+
+
+
+
+
+
+
+        $this->manipulateDB($member_id[0],$role_id_source[0],$destination_id[0],$role_id_dest[0],$group_id[0]);
 
         $this->view();
 
 
 
     }
+    protected function getRoleID($description){
+        global $ilDB;
+        $role_id = array();
+        $query = "SELECT od.obj_id FROM ilias.object_data as od WHERE od.description = '".$description."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($role_id,$record);
+        }
+        return $role_id;
+    }
+    protected function manipulateDB($member_id,$role_id_source,$destination_id,$role_id_dest,$source_id){
+        global $ilDB;
+
+        //insert in RBAC
+        $query = "INSERT INTO rbac_ua (usr_id, rol_id) ".
+            "VALUES (".$member_id['usr_id'].",".$role_id_dest['obj_id'].")";
+        $res = $ilDB->manipulate($query);
+
+        //delete OLD from RBAC
+        $query = "DELETE FROM rbac_ua 
+            WHERE usr_id = ".$member_id['usr_id']."
+            AND rol_id = ".$role_id_source['obj_id']." ";
+        $res = $ilDB->manipulate($query);
+
+        $query = "UPDATE ilias.obj_members as om
+        SET om.obj_id = '".$destination_id['obj_id']."' WHERE om.usr_id = '".$member_id['usr_id']."' AND om.obj_id = '".$source_id['obj_id']."' AND om.member = 1";
+        $ilDB->manipulate($query);
+
+    }
     protected function getGroupIdByTitle($group_title,$course_id){
         global $ilDB;
         $group_id= array();
 
-        $query = "select citem.obj_id from
-ilias.crs_items as citem
-join ilias.object_reference oref
-join ilias.object_data od on (oref.obj_id = od.obj_id and citem.obj_id = oref.ref_id)
+        $query = "select oref.obj_id from
+                  ilias.crs_items as citem
+                  join ilias.object_reference oref
+                  join ilias.object_data od on (oref.obj_id = od.obj_id and citem.obj_id = oref.ref_id)
                   where od.title= %s and citem.parent_id= %s and oref.deleted is null";
         $result = $ilDB->queryF($query, array('text','integer'),array($group_title,$course_id));
         while ($record = $ilDB->fetchAssoc($result)){
