@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include_once("./Services/UIComponent/classes/class.ilUIHookPluginGUI.php");
 include_once("./Services/UIComponent/Explorer2/classes/class.ilExplorerBaseGUI.php");
 include_once("./Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseImport/classes/class.ilNavigationMenu.php");
@@ -170,8 +170,7 @@ class ilCourseImportGroupGUI
         $number = $this->group_count->getValue();
         $members = $this->members->getValue();
         
-        // Query schaut leider erst nach Anzahl aller Gruppen, besser wäre nach Anzahl Gruppen im jeweiligen Kurs
-        //TODO
+        
         
       $query = "select od.title as 'Übungsruppe'
                   from ilias.object_data od
@@ -187,7 +186,7 @@ class ilCourseImportGroupGUI
           
   
 
-          $result = count($group_number);
+        $result = count($group_number);
        
         $nn = 1;
         
