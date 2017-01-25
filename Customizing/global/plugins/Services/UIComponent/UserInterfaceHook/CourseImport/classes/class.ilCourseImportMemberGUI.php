@@ -166,18 +166,15 @@ class ilCourseImportMemberGUI {
         $role_id_dest = $this->getRoleID($description_dest);
         $role_id_source = $this->getRoleID($description_source);
 
-
-
-
-
-
-
+        //Ueberpruefung der Daten auf Korrektheit vor DB-Zugriff
+        $this->checkIfGroupExists($group_id[0]);                       //alte Gruppe vorhanden
+        $this->checkIfGroupExists($destination_id[0]);                 //neue Gruppe vorhanden
+        $this->checkIfUserExistsInGroup($member_id[0], $group_id[0]);             //User in alter Gruppe vorhanden
+        $this->checkIfUserNotExistsInGroup($member_id[0], $destination_id[0]);    //User in neuer Gruppe vorhanden
 
         $this->manipulateDB($member_id[0],$role_id_source[0],$destination_id[0],$role_id_dest[0],$group_id[0]);
 
         $this->view();
-
-
 
     }
     protected function getRoleID($description){
@@ -213,11 +210,16 @@ class ilCourseImportMemberGUI {
         global $ilDB;
         $group_id= array();
 
-        $query = "select oref.obj_id from
-                  ilias.crs_items as citem
-                  join ilias.object_reference oref
-                  join ilias.object_data od on (oref.obj_id = od.obj_id and citem.obj_id = oref.ref_id)
-                  where od.title= %s and citem.parent_id= %s and oref.deleted is null";
+//        $query = "select oref.obj_id from
+//                  ilias.crs_items as citem
+//                  join ilias.object_reference oref
+//                  join ilias.object_data od on (oref.obj_id = od.obj_id and citem.obj_id = oref.ref_id)
+//                  where od.title= %s and citem.parent_id= %s and oref.deleted is null";
+
+        $query = "select oref.obj_id from ilias.crs_items as citem
+                  join ilias.object_reference as oref on oref.ref_id = citem.obj_id
+                  join ilias.object_data as od on oref.obj_id = od.obj_id
+                  where od.title='".$group_title."' and oref.deleted is null";
         $result = $ilDB->queryF($query, array('text','integer'),array($group_title,$course_id));
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($group_id,$record);
@@ -235,12 +237,86 @@ class ilCourseImportMemberGUI {
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($member_id,$record);
         }
+
         return $member_id;
 
+    }
 
+    //Uberpruefung, ob User in der bisherigen Gruppe vorhanden
+    protected function checkIfUserExistsInGroup($member_id, $group_id){
+        global $ilDB, $ilErr;
 
+        $queryResult = array();
+
+        $query = "SELECT COUNT(*) FROM ilias.object_data as od 
+                  join ilias.object_reference as obr on obr.obj_id = od.obj_id 
+                  join ilias.obj_members as om on obr.obj_id = om.obj_id
+                  WHERE obr.deleted is null and od.obj_id = '".$group_id."' and om.usr_id = '".$member_id."'";
+
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($queryResult,$record);
+        }
+
+        if($queryResult[0] != 1) {
+            ilUtil::sendFailure($this->pl->txt("User doesn't exist in this group."), true);
+            return false;
+        } else {
+            return true;
+        }
 
     }
+
+    //Uberpruefung, ob User in der neuen Gruppe schon vorhanden
+    protected function checkIfUserNotExistsInGroup($member_id, $group_id){
+        global $ilDB, $ilErr;
+
+        $queryResult = array();
+
+        $query = "SELECT COUNT(*) FROM ilias.object_data as od 
+                  join ilias.object_reference as obr on obr.obj_id = od.obj_id 
+                  join ilias.obj_members as om on obr.obj_id = om.obj_id
+                  WHERE obr.deleted is null and od.obj_id = '".$group_id."' and om.usr_id = '".$member_id."'";
+
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($queryResult,$record);
+        }
+
+        if($queryResult[0] == 1) {
+            ilUtil::sendFailure($this->pl->txt("User already exists in the group you try to move him."), true);
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
+
+    // Ueberpruefung, ob die Gruppe exisitiert
+    protected function checkIfGroupExists($group_id){
+        global $ilDB, $ilErr;
+
+        $queryResult = array();
+
+        $query = "SELECT COUNT(*) FROM ilias.object_data as od 
+                  join ilias.object_reference as obr on obr.obj_id = od.obj_id 
+                  WHERE obr.deleted is null and od.obj_id = '".$group_id."'";
+
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($queryResult,$record);
+        }
+
+        if($queryResult[0] != 1) {
+            ilUtil::sendFailure($this->pl->txt("Group doesn't exist."), true);
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
     protected function checkAccess() {
         global $ilAccess, $ilErr;
         if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {
