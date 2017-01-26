@@ -167,12 +167,18 @@ class ilCourseImportMemberGUI {
         $role_id_source = $this->getRoleID($description_source);
 
         //Ueberpruefung der Daten auf Korrektheit vor DB-Zugriff
-        $this->checkIfGroupExists($group_id[0]);                       //alte Gruppe vorhanden
-        $this->checkIfGroupExists($destination_id[0]);                 //neue Gruppe vorhanden
-        $this->checkIfUserExistsInGroup($member_id[0], $group_id[0]);             //User in alter Gruppe vorhanden
-        $this->checkIfUserNotExistsInGroup($member_id[0], $destination_id[0]);    //User in neuer Gruppe vorhanden
+        //$this->checkIfGroupExists($group_id[0]);                       //alte Gruppe vorhanden
+        //$this->checkIfGroupExists($destination_id[0]);                 //neue Gruppe vorhanden
+        //$this->checkIfUserExistsInGroup($member_id[0], $group_id[0]);             //User in alter Gruppe vorhanden
+        //$this->checkIfUserNotExistsInGroup($member_id[0], $destination_id[0]);    //User in neuer Gruppe vorhanden
 
-        $this->manipulateDB($member_id[0],$role_id_source[0],$destination_id[0],$role_id_dest[0],$group_id[0]);
+        if (($this->checkIfGroupExists($group_id[0])) and ($this->checkIfGroupExists($destination_id[0])) and
+            ($this->checkIfUserExistsInGroup($member_id[0], $group_id[0])) and
+            ($this->checkIfUserNotExistsInGroup($member_id[0], $destination_id[0]))) {
+
+            $this->manipulateDB($member_id[0],$role_id_source[0],$destination_id[0],$role_id_dest[0],$group_id[0]);
+
+        }
 
         $this->view();
 
