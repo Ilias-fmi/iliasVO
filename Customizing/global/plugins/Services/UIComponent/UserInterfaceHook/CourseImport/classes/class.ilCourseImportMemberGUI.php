@@ -67,6 +67,7 @@ class ilCourseImportMemberGUI {
         $this->ctrl->setParameterByClass('ilcourseimportgroupgui','ref_id',$_GET['ref_id']);
         $this->ctrl->setParameterByClass('ilcourseimportgroupdisplaygui', 'ref_id', $_GET['ref_id']);
         $this->ctrl->setParameterByClass('ilcourseimportmembergui','ref_id',$_GET['ref_id']);
+        $this->ctrl->setParameterByClass('ilrepositorygui', 'ref_id', $_GET['ref_id']);
 
         $this->tabs->addTab('course_management', $this->pl->txt('tab_course_management'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI')));
 
@@ -81,6 +82,7 @@ class ilCourseImportMemberGUI {
             'ilrepositorygui',
             'ilrepositorygui',
         )));
+
         $this->setTitleAndIcon();
 
         $ilLocator->addRepositoryItems($_GET['ref_id']);
