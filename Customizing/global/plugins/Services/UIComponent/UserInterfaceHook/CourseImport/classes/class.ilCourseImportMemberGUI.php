@@ -265,7 +265,7 @@ class ilCourseImportMemberGUI {
         }
 
         if($queryResult[0]["count(*)"] != 1) {
-            ilUtil::sendFailure($this->pl->txt("User doesn't exist in this group."), true);
+            ilUtil::sendFailure($this->pl->txt("userInGroupNotExistent"), true);
             return false;
         } else {
             return true;
@@ -291,7 +291,7 @@ class ilCourseImportMemberGUI {
         }
 
         if($queryResult[0]["count(*)"] == 1) {
-            ilUtil::sendFailure($this->pl->txt("User already exists in the group you try to move him."), true);
+            ilUtil::sendFailure($this->pl->txt("userInGroupExistent"), true);
             return false;
         } else {
             return true;
@@ -320,7 +320,7 @@ class ilCourseImportMemberGUI {
         //var_dump($queryResult);
 
         if($queryResult[0]["count(*)"] != 1) {
-            ilUtil::sendFailure($this->pl->txt("Group doesn't exist."), true);
+            ilUtil::sendFailure($this->pl->txt("groupNotExistent"), true);
             return false;
         } else {
             return true;

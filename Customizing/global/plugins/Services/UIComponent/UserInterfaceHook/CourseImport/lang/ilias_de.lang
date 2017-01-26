@@ -1,3 +1,6 @@
+userInGroupNotExistent#:#Benutzer existiert in gew&auml;hlter Gruppe nicht.
+userInGroupExistent#:#Benuter existiert in gew&uuml;nschter Gruppe bereits.
+groupNotExistent#:#Gruppe existiert nicht.
 tab_course_import#:#Excel-/XML-Kursimport
 tab_course_management#:#Kursauswahl
 tab_course_management_tbl#:#Kurse und Gruppen verwalten
