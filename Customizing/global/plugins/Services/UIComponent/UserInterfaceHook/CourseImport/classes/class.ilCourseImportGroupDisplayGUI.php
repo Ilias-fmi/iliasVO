@@ -130,19 +130,44 @@ class ilCourseImportGroupDisplayGUI
         $table->setTitle($this->pl->txt('form_title_management'));
         $table->setId('crs_management');
         $table->setFormAction($this->ctrl->getFormAction($this));
-        $table->addColumn('Kursname', "", "20%");
-        $table->addColumn('Gruppenname', "", "20%");
-        $table->addColumn('Termin', "", "20%");
-        $table->addColumn('Raum', "", "20%");
-        $table->addColumn('Tutor', "", "10%");
-        $table->addColumn('Max. Mitglieder', "", "10%");
+        //$table->addColumn($this->pl->txt('course_name'), "", "20%");
+        $table->addColumn($this->pl->txt('title'), "", "30%");
+        $table->addColumn($this->pl->txt('description'), "", "30%");
+        $table->addColumn($this->pl->txt('login'), "", "20%");
+        $table->addColumn($this->pl->txt('registration_max_members'), "", "20%");
 
-        $table->fillRow();
+        $data = $this->getTableData($_GET['ref_id']);
+
+        var_dump($data);
+
+        $table->fillRow($data[0]);
 
 
         $table->addCommandButton('saveForm', $this->pl->txt('save_settings'));
 
         return $table;
+    }
+
+    protected function getTableData($ref_id){
+
+        global $ilDB;
+
+        $data = array();
+        $query = "select od.title, gs.registration_max_members, ud.login, od.description
+from ilias.object_data as od
+join ilias.object_reference as oref on oref.obj_id = od.obj_id 
+join ilias.grp_settings gs on gs.obj_id = oref.obj_id
+join ilias.crs_items citem on citem.obj_id = oref.ref_id
+left join (select * from ilias.obj_members om where om.tutor = 1) as obm on obm.obj_id = oref.obj_id
+left join ilias.usr_data ud on ud.usr_id = obm.usr_id
+where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$ref_id."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+
+        return $data;
+
     }
 
     protected function checkAccess()
