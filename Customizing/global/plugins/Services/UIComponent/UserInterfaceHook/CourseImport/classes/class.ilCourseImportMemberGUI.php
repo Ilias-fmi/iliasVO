@@ -251,20 +251,19 @@ class ilCourseImportMemberGUI {
         $query = "SELECT COUNT(*) FROM ilias.object_data as od 
                   join ilias.object_reference as obr on obr.obj_id = od.obj_id 
                   join ilias.obj_members as om on obr.obj_id = om.obj_id
-                  WHERE obr.deleted is null and od.obj_id = '".$group_id."' and om.usr_id = '".$member_id."'";
+                  WHERE obr.deleted is null and od.obj_id = '".$group_id["obj_id"]."' and om.usr_id = '".$member_id["usr_id"]."'";
 
         $result = $ilDB->query($query);
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($queryResult,$record);
         }
 
-        if($queryResult[0] != 1) {
+        if($queryResult[0]["count(*)"] != 1) {
             ilUtil::sendFailure($this->pl->txt("User doesn't exist in this group."), true);
             return false;
         } else {
             return true;
         }
-
     }
 
     //Uberpruefung, ob User in der neuen Gruppe schon vorhanden
@@ -273,17 +272,19 @@ class ilCourseImportMemberGUI {
 
         $queryResult = array();
 
+        //var_dump($member_id);
+
         $query = "SELECT COUNT(*) FROM ilias.object_data as od 
                   join ilias.object_reference as obr on obr.obj_id = od.obj_id 
                   join ilias.obj_members as om on obr.obj_id = om.obj_id
-                  WHERE obr.deleted is null and od.obj_id = '".$group_id."' and om.usr_id = '".$member_id."'";
+                  WHERE obr.deleted is null and od.obj_id = '".$group_id["obj_id"]."' and om.usr_id = '".$member_id["usr_id"]."'";
 
         $result = $ilDB->query($query);
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($queryResult,$record);
         }
 
-        if($queryResult[0] == 1) {
+        if($queryResult[0]["count(*)"] == 1) {
             ilUtil::sendFailure($this->pl->txt("User already exists in the group you try to move him."), true);
             return false;
         } else {
@@ -299,22 +300,25 @@ class ilCourseImportMemberGUI {
 
         $queryResult = array();
 
+        //var_dump($group_id);
+
         $query = "SELECT COUNT(*) FROM ilias.object_data as od 
                   join ilias.object_reference as obr on obr.obj_id = od.obj_id 
-                  WHERE obr.deleted is null and od.obj_id = '".$group_id."'";
+                  WHERE obr.deleted is null and od.obj_id = '".$group_id["obj_id"]."'";
 
         $result = $ilDB->query($query);
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($queryResult,$record);
         }
 
-        if($queryResult[0] != 1) {
+        //var_dump($queryResult);
+
+        if($queryResult[0]["count(*)"] != 1) {
             ilUtil::sendFailure($this->pl->txt("Group doesn't exist."), true);
             return false;
         } else {
             return true;
         }
-
     }
 
     protected function checkAccess() {
