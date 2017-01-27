@@ -116,37 +116,44 @@ class ilCourseImportGroupDisplayGUI
      */
     protected function view()
     {
-        $table = $this->initTable();
-        $this->tpl->setContent($table->getHTML());
+        $form =$this->initForm();
+        $this->tpl->setContent($form->getHTML());
     }
 
     /**
-     * @return ilCourseImportGroupTable
+     * @return ilPropertyFormGUI
      */
-    protected function initTable()
-    {
-
-        $table = new ilCourseImportGroupTable($this);
-        $table->setTitle($this->pl->txt('form_title_management'));
-        $table->setId('crs_management');
-        $table->setFormAction($this->ctrl->getFormAction($this));
-        //$table->addColumn($this->pl->txt('course_name'), "", "20%");
-        $table->addColumn($this->pl->txt('title'), "", "30%");
-        $table->addColumn($this->pl->txt('description'), "", "30%");
-        $table->addColumn($this->pl->txt('login'), "", "20%");
-        $table->addColumn($this->pl->txt('registration_max_members'), "", "20%");
-
+    protected function initForm()
+        {
+            $form = new ilPropertyFormGUI();
+            $form->setTitle('course_edit');
         $data = $this->getTableData($_GET['ref_id']);
 
-        var_dump($data);
+        foreach ($data as $row){
+            var_dump($row);
+            $section = new ilFormSectionHeaderGUI();
+            $section->setTitle($row['title']);
+            $form->addItem($section);
+            $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
+            $textfield_description = new ilTextInputGUI($this->pl->txt("description"),"description");
+            $textfield_tutor = new ilTextInputGUI($this->pl->txt("tutor"),"tutor");
+            $textfield_members = new ilNumberInputGUI($this->pl->txt("members"),"members");
+            $textfield_name->setValue($row['title']);
+            $textfield_description->setValue($row['description']);
+            $textfield_tutor->setValue($row['login']);
+            $textfield_members->setValue($row['registration_max_members']);
+            $form->addItem($textfield_name);
+            $form->addItem($textfield_description);
+            $form->addItem($textfield_tutor);
+            $form->addItem($textfield_members);
 
-        $table->fillRow($data[0]);
 
-
-        $table->addCommandButton('saveForm', $this->pl->txt('save_settings'));
-
-        return $table;
+        }
+        $form->addCommandButton('saveForm','save');
+            return $form;
     }
+
+
 
     protected function getTableData($ref_id){
 
@@ -165,7 +172,6 @@ where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$ref_id.
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);
         }
-
         return $data;
 
     }

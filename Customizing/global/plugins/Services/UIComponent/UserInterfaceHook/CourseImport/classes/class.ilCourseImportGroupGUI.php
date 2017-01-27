@@ -8,6 +8,8 @@ require_once './Services/Object/classes/class.ilObject2.php';
 require_once './Services/Form/classes/class.ilNumberInputGUI.php';
 require_once './Services/Form/classes/class.ilTextInputGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
+require_once './Services/Form/classes/class.ilRadioGroupInputGUI.php';
+require_once './Services/Form/classes/class.ilRadioOption.php';
 
 /**
  * Created by PhpStorm.
@@ -56,6 +58,8 @@ class ilCourseImportGroupGUI
     protected $members;
     protected $group_count;
     protected $number_grp;
+    protected $reg_proc;
+    protected $pass;
 
 
     public function __construct() {
@@ -149,6 +153,20 @@ class ilCourseImportGroupGUI
 
         $form->addItem($this->group_count);
         $form->addItem($this->members);
+        $this->reg_proc = new ilRadioGroupInputGUI($this->pl->txt('grp_registration_type'),'subscription_type');
+
+        $opt = new ilRadioOption($this->pl->txt('grp_reg_direct_info_screen'),GRP_REGISTRATION_DIRECT);
+        $this->reg_proc->addOption($opt);
+
+        $opt = new ilRadioOption($this->pl->txt('grp_reg_passwd_info_screen'),GRP_REGISTRATION_PASSWORD);
+        $this->pass = new ilTextInputGUI($this->pl->txt("password"),'subscription_password');
+        $this->pass->setSize(12);
+        $this->pass->setMaxLength(12);
+
+        $opt->addSubItem($this->pass);
+        $this->reg_proc->addOption($opt);
+
+        $form->addItem($this->reg_proc);
         $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
 
         return $form;
@@ -170,6 +188,8 @@ class ilCourseImportGroupGUI
         $form->setValuesByPost();
         $number = $this->group_count->getValue();
         $members = $this->members->getValue();
+        $password = $this->pass->getValue();
+        $reg_type = $this->reg_proc->getValue();
         
         
         
@@ -206,6 +226,10 @@ class ilCourseImportGroupGUI
                 $group = new ilObjGroup();
                 $group->setTitle('Gruppe '.$n);
                 $group->setGroupType(GRP_TYPE_OPEN);
+                $group->setRegistrationType($reg_type);
+                if($reg_type == GRP_REGISTRATION_PASSWORD){
+                    $group->setPassword($password);
+                }
                 $group->setMaxMembers($members);
                 $group->enableMembershipLimitation(true);
                 $group->create();
