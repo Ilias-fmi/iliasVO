@@ -1,6 +1,8 @@
 <?php
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once 'class.ilCourseImportGroupTable.php';
+require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
+
 /**
  * Created by PhpStorm.
  * User: Manuel
@@ -125,6 +127,7 @@ class ilCourseImportGroupDisplayGUI
      */
     protected function initForm()
         {
+
             $form = new ilPropertyFormGUI();
             $form->setTitle('course_edit');
         $data = $this->getTableData($_GET['ref_id']);
@@ -134,22 +137,30 @@ class ilCourseImportGroupDisplayGUI
             $section = new ilFormSectionHeaderGUI();
             $section->setTitle($row['title']);
             $form->addItem($section);
-            $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
-            $textfield_description = new ilTextInputGUI($this->pl->txt("description"),"description");
-            $textfield_tutor = new ilTextInputGUI($this->pl->txt("tutor"),"tutor");
-            $textfield_members = new ilNumberInputGUI($this->pl->txt("members"),"members");
+            $textfield_name = new ilTextInputGUI($this->pl->txt("group_title"), "group_name");
+            $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
+            $textfield_tutor = new ilTextInputGUI($this->pl->txt("group_tutor"),"tutor");
+            $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members");
+            $registration_start = new ilDateTimeInputGUI($this->pl->txt("group_start"),"reg_start");
+            $registration_end = new ilDateTimeInputGUI($this->pl->txt("group_end"),"reg_end");
             $textfield_name->setValue($row['title']);
             $textfield_description->setValue($row['description']);
             $textfield_tutor->setValue($row['login']);
             $textfield_members->setValue($row['registration_max_members']);
+            $start_time = new ilDateTime($row['registration_start'],IL_CAL_DATETIME);
+            $end_time = new ilDateTime($row['registration_end'],IL_CAL_DATETIME);
+            $registration_start->setDate($start_time);
+            $registration_end->setDate($end_time);
             $form->addItem($textfield_name);
             $form->addItem($textfield_description);
             $form->addItem($textfield_tutor);
             $form->addItem($textfield_members);
+            $form->addItem($registration_start);
+            $form->addItem($registration_end);
 
 
         }
-        $form->addCommandButton('saveForm','save');
+        $form->addCommandButton('saveForm','save_settings');
             return $form;
     }
 
@@ -160,7 +171,7 @@ class ilCourseImportGroupDisplayGUI
         global $ilDB;
 
         $data = array();
-        $query = "select od.title, gs.registration_max_members, ud.login, od.description
+        $query = "select od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end
 from ilias.object_data as od
 join ilias.object_reference as oref on oref.obj_id = od.obj_id 
 join ilias.grp_settings gs on gs.obj_id = oref.obj_id

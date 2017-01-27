@@ -2,7 +2,7 @@ userInGroupNotExistent#:#Benutzer existiert in gew&auml;hlter Gruppe nicht.
 userInGroupExistent#:#Benuter existiert in gew&uuml;nschter Gruppe bereits.
 groupNotExistent#:#Gruppe existiert nicht.
 tab_course_import#:#Excel-/XML-Kursimport
-tab_course_management#:#Kursauswahl
+tab_course_management#:#Gruppen verwalten
 tab_course_management_tbl#:#Kurse und Gruppen verwalten
 course_search#:#Kurs suchen
 course_edit#:#Kurs bearbeiten
@@ -13,13 +13,14 @@ create_groups#:#Erstellen
 group_count#:#Anzahl der Gruppen
 members#:#Maximale Mitgliederanzahl
 group_title#:#Gruppenname
-group_time#:#Termin
-group_location#:#Raum
+group_description#:#Raum und Uhrzeit
 group_tutor#:#Tutor
 group_max_members#:#Max. Mitglieder
+group_password#:#Gruppenpasswort
+grp_reg_passwd_info_screen#:# Gruppenbeitritt mit Passwort
+grp_reg_direct_info_screen#:# Direkter Gruppenbeitritt
 member_edit#:#Mitglieder verschieben
 move_member#:#Verschieben
-group_title#:#Gruppen Name
 member_login#:#Benutzername
 member_description#:#Geben Sie hier den Benutzername des Benutzers sowie den Namen der Gruppe in die der Benutzer verschoben werden soll an.
 save_settings#:#Speichern
