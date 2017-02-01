@@ -10,6 +10,7 @@ require_once './Services/Form/classes/class.ilTextInputGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
 require_once './Services/Form/classes/class.ilRadioGroupInputGUI.php';
 require_once './Services/Form/classes/class.ilRadioOption.php';
+require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
 
 /**
  * Created by PhpStorm.
@@ -18,7 +19,11 @@ require_once './Services/Form/classes/class.ilRadioOption.php';
  * Time: 15:54
  * @ilCtrl_IsCalledBy ilCourseImportGroupGUI: ilUIPluginRouterGUI
  * @ilCtrl_Calls      ilCourseImportGroupGUI: ilObjCourseAdministrationGUI
- *
+ * 
+ *  This class implements the functionality of the "groupcreator tab" which are
+ *  the number of groups (checks the db and numbers the group consecutively), 
+ *  maximum members and how to join the groups. 
+ *  
  */
 class ilCourseImportGroupGUI
 {
@@ -60,6 +65,9 @@ class ilCourseImportGroupGUI
     protected $number_grp;
     protected $reg_proc;
     protected $pass;
+    
+    protected $group_time_start;
+    
 
 
     public function __construct() {
@@ -168,7 +176,12 @@ class ilCourseImportGroupGUI
 
         $form->addItem($this->reg_proc);
         $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
-
+        
+        
+        $this->group_time_start = new ilDateTimeInputGUI();
+        $form->addItem($this->group_time_start);
+        
+        
         return $form;
     }
 
@@ -190,6 +203,9 @@ class ilCourseImportGroupGUI
         $members = $this->members->getValue();
         $password = $this->pass->getValue();
         $reg_type = $this->reg_proc->getValue();
+        
+        //$group_time_start = new ilDateTime('2008-06-12 08:00:00',IL_CAL_DATETIME);
+        $group_time_start = $this->group_time_start->getDate();
         
         
         
@@ -230,12 +246,19 @@ class ilCourseImportGroupGUI
                 if($reg_type == GRP_REGISTRATION_PASSWORD){
                     $group->setPassword($password);
                 }
+                
+                $group->setRegistrationStart($group_time_start);
+                
                 $group->setMaxMembers($members);
                 $group->enableMembershipLimitation(true);
                 $group->create();
                 $group->createReference();
                 $group->putInTree($_GET['ref_id']);
                 $group->setPermissions($_GET['ref_id']);
+             
+                
+               
+              
                 $this->courses['created'] .= ilObject2::_lookupTitle(ilObject2::_lookupObjId($_GET['ref_id'])) . ' - ' . $group->getTitle() . '<br>';
                 $created = true;
             }
