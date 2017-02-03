@@ -139,7 +139,7 @@ class ilCourseImportGroupDisplayGUI
             $form->addItem($section);
             $textfield_name = new ilTextInputGUI($this->pl->txt("group_title"), "group_name");
             $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
-            $textfield_tutor = new ilTextInputGUI($this->pl->txt("group_tutor"),"tutor");
+            $textfield_tutor = new ilUserLoginInputGUI($this->pl->txt("group_tutor"),"tutor");
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members");
             $registration_start = new ilDateTimeInputGUI($this->pl->txt("group_start"),"reg_start");
             $registration_end = new ilDateTimeInputGUI($this->pl->txt("group_end"),"reg_end");

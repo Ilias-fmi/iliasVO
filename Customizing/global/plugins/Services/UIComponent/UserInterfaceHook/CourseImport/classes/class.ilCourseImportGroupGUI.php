@@ -174,16 +174,45 @@ class ilCourseImportGroupGUI
         $opt->addSubItem($this->pass);
         $this->reg_proc->addOption($opt);
 
+        $time_limit = new ilCheckboxInputGUI($this->lng->txt('grp_reg_limited'),'reg_limit_time');
+
+        $this->lng->loadLanguageModule('dateplaner');
+        include_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
+        $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
+        $dur = new ilDateDurationInputGUI($this->lng->txt('grp_reg_period'),'reg');
+        $dur->setStartText($this->pl->txt('cal_start'));
+        $dur->setEndText($this->pl->txt('cal_end'));
+        $dur->setShowTime(true);
+//        $dur->setStart($this->object->getRegistrationStart());
+//        $dur->setEnd($this->object->getRegistrationEnd());
+
+        $time_limit->addSubItem($dur);
+        $form->addItem($time_limit);
+
         $form->addItem($this->reg_proc);
         $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
         
         
-        $this->group_time_start = new ilDateTimeInputGUI();
-        $form->addItem($this->group_time_start);
-        
-        
         return $form;
     }
+
+    protected function loadDate($a_field)
+    {
+        global $ilUser;
+
+        include_once('./Services/Calendar/classes/class.ilDateTime.php');
+
+        $dt['year'] = (int) $_POST['reg'][$a_field]['date']['y'];
+        $dt['mon'] = (int) $_POST['reg'][$a_field]['date']['m'];
+        $dt['mday'] = (int) $_POST['reg'][$a_field]['date']['d'];
+        $dt['hours'] = (int) $_POST['reg'][$a_field]['time']['h'];
+        $dt['minutes'] = (int) $_POST['reg'][$a_field]['time']['m'];
+        $dt['seconds'] = (int) $_POST['reg'][$a_field]['time']['s'];
+
+        $date = new ilDateTime($dt,IL_CAL_FKT_GETDATE,$ilUser->getTimeZone());
+        return $date;
+    }
+
 
     protected function createGroups()
     {
@@ -191,21 +220,20 @@ class ilCourseImportGroupGUI
         global $ilDB;
         
          
-        
-        
-        
-      
-        $group_number = array();
-        $created = false;
         $form = $this->initForm();
         $form->setValuesByPost();
+
+        $reg_start = $this->loadDate('start');
+        $reg_end = $this->loadDate('end');
+        echo $reg_start;
+        echo $reg_end;
+        $group_number = array();
+        $created = false;
         $number = $this->group_count->getValue();
         $members = $this->members->getValue();
         $password = $this->pass->getValue();
         $reg_type = $this->reg_proc->getValue();
-        
-        //$group_time_start = new ilDateTime('2008-06-12 08:00:00',IL_CAL_DATETIME);
-        $group_time_start = $this->group_time_start->getDate();
+
         
         
         
@@ -241,14 +269,14 @@ class ilCourseImportGroupGUI
             for ($n = $nn ; $n <= $number; $n++) {
                 $group = new ilObjGroup();
                 $group->setTitle('Gruppe '.$n);
-                $group->setGroupType(GRP_TYPE_OPEN);
+                $group->setGroupType(GRP_TYPE_CLOSED);
                 $group->setRegistrationType($reg_type);
                 if($reg_type == GRP_REGISTRATION_PASSWORD){
                     $group->setPassword($password);
                 }
-                
-                $group->setRegistrationStart($group_time_start);
-                
+                $group->enableUnlimitedRegistration((bool) !$_POST['reg_limit_time']);
+                $group->setRegistrationStart($reg_start);
+                $group->setRegistrationEnd($reg_end);
                 $group->setMaxMembers($members);
                 $group->enableMembershipLimitation(true);
                 $group->create();
@@ -264,8 +292,12 @@ class ilCourseImportGroupGUI
             }
             if($created) {
                 ilUtil::sendSuccess(sprintf($this->pl->txt(self::CREATION_SUCCEEDED), $this->courses['created'], $this->courses['updated'], $this->courses['refs'], $this->courses['refs_del']));
+                $form = $this->initForm();
+                $this->tpl->setContent($form->getHTML());
             }else {
                 ilUtil::sendFailure($this->pl->txt(self::CREATION_FAILED), true);
+                $this->tpl->setContent($form->getHTML());
+
             }
     }
 
