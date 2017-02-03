@@ -2,6 +2,7 @@
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once 'class.ilCourseImportGroupTable.php';
 require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
+require_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
 
 /**
  * Created by PhpStorm.
@@ -43,6 +44,8 @@ class ilCourseImportGroupDisplayGUI
      * @var ilTree
      */
     protected $tree;
+
+    protected $form;
 
     public function __construct()
     {
@@ -118,8 +121,28 @@ class ilCourseImportGroupDisplayGUI
      */
     protected function view()
     {
-        $form =$this->initForm();
-        $this->tpl->setContent($form->getHTML());
+        $this->form =$this->initForm();
+        $items = $this->form->getItems();
+
+
+        //Ausgabe zu Testzwecken, richtige Funktion in saveGroups(); !!!!!
+        $group_items = array_chunk($items,7);
+        foreach ($group_items as $group){
+
+            $ref_id = $group[1]->getValue();
+            $title = $group[2]->getValue();
+            $description =$group[3]->getValue();
+            $tutor=$group[4]->getValue();
+            $members=$group[5]->getValue();
+            $duration=$group[6];
+            var_dump($ref_id);
+            var_dump($title);
+            var_dump($description);
+            var_dump($tutor);
+            var_dump($members);
+        }
+        $this->tpl->setContent($this->form->getHTML());
+
     }
 
     /**
@@ -133,35 +156,87 @@ class ilCourseImportGroupDisplayGUI
         $data = $this->getTableData($_GET['ref_id']);
 
         foreach ($data as $row){
-            var_dump($row);
             $section = new ilFormSectionHeaderGUI();
             $section->setTitle($row['title']);
             $form->addItem($section);
+            $ref_id_field = new ilNumberInputGUI($this->pl->txt("ref_id"), "ref_id");
+            $ref_id_field->setDisabled(true);
             $textfield_name = new ilTextInputGUI($this->pl->txt("group_title"), "group_name");
             $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
             $textfield_tutor = new ilUserLoginInputGUI($this->pl->txt("group_tutor"),"tutor");
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members");
-            $registration_start = new ilDateTimeInputGUI($this->pl->txt("group_start"),"reg_start");
-            $registration_end = new ilDateTimeInputGUI($this->pl->txt("group_end"),"reg_end");
+            $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
+            $dur = new ilDateDurationInputGUI($this->lng->txt('grp_reg_period'),'reg');
+            $dur->setStartText($this->pl->txt('cal_start'));
+            $dur->setEndText($this->pl->txt('cal_end'));
+            $dur->setShowTime(true);
+            $ref_id_field->setValue($row['obj_id']);
             $textfield_name->setValue($row['title']);
             $textfield_description->setValue($row['description']);
             $textfield_tutor->setValue($row['login']);
             $textfield_members->setValue($row['registration_max_members']);
             $start_time = new ilDateTime($row['registration_start'],IL_CAL_DATETIME);
             $end_time = new ilDateTime($row['registration_end'],IL_CAL_DATETIME);
-            $registration_start->setDate($start_time);
-            $registration_end->setDate($end_time);
+            $dur->setStart($start_time);
+            $dur->setEnd($end_time);
+            $form->addItem($ref_id_field);
             $form->addItem($textfield_name);
             $form->addItem($textfield_description);
             $form->addItem($textfield_tutor);
             $form->addItem($textfield_members);
-            $form->addItem($registration_start);
-            $form->addItem($registration_end);
-
+            $form->addItem($dur);
 
         }
-        $form->addCommandButton('saveForm','save_settings');
+        $form->addCommandButton('saveGroups',$this->pl->txt('save_groups'));
             return $form;
+    }
+
+    protected function saveGroups(){
+
+
+        $items = $this->form->getItems();
+        $group_items = array_chunk($items,7);
+        var_dump($group_items);
+        $form = new ilPropertyFormGUI();
+        foreach ($group_items as $group){
+
+            $ref_id = $group[1]->getValue();
+            $title = $group[2]->getValue();
+            $description =$group[3]->getValue();
+            $tutor=$group[4]->getValue();
+            $members=$group[5]->getValue();
+            $duration=$group[6];
+            $reg_start=$duration->getStart();
+            $reg_end=$duration->getEnd();
+            var_dump($ref_id);
+            var_dump($title);
+            var_dump($description);
+            var_dump($tutor);
+            var_dump($members);
+
+
+            $this->updateGroup($ref_id,$title,$description,$tutor,$members,$reg_start,$reg_end);
+        }
+
+
+        $this->tpl->setContent($form->getHTML());
+
+
+    }
+
+    /**
+     * @param $obj_id float
+     * @param $title string
+     * @param $description string
+     * @param $tutor string
+     * @param $members float Maximum Members
+     * @param $reg_start ilDateTime Start of Registration Period
+     * @param $reg_end ilDateTime Start of Registration Period
+     */
+    protected function updateGroup($obj_id, $title, $description, $tutor, $members, $reg_start, $reg_end){
+
+        //TODO: Manipulate DB an den Richtigen Stellen /(Select über obj_id in object_data / group_settings!
+
     }
 
 
@@ -171,7 +246,7 @@ class ilCourseImportGroupDisplayGUI
         global $ilDB;
 
         $data = array();
-        $query = "select od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end
+        $query = "select od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end, od.obj_id
 from ilias.object_data as od
 join ilias.object_reference as oref on oref.obj_id = od.obj_id 
 join ilias.grp_settings gs on gs.obj_id = oref.obj_id

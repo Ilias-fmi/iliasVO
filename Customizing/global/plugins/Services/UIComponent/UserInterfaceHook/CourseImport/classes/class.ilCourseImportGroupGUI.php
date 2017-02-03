@@ -173,9 +173,9 @@ class ilCourseImportGroupGUI
 
         $opt->addSubItem($this->pass);
         $this->reg_proc->addOption($opt);
+        $form->addItem($this->reg_proc);
 
         $time_limit = new ilCheckboxInputGUI($this->lng->txt('grp_reg_limited'),'reg_limit_time');
-
         $this->lng->loadLanguageModule('dateplaner');
         include_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
         $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
@@ -183,13 +183,10 @@ class ilCourseImportGroupGUI
         $dur->setStartText($this->pl->txt('cal_start'));
         $dur->setEndText($this->pl->txt('cal_end'));
         $dur->setShowTime(true);
-//        $dur->setStart($this->object->getRegistrationStart());
-//        $dur->setEnd($this->object->getRegistrationEnd());
 
         $time_limit->addSubItem($dur);
         $form->addItem($time_limit);
 
-        $form->addItem($this->reg_proc);
         $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
         
         
@@ -222,11 +219,8 @@ class ilCourseImportGroupGUI
          
         $form = $this->initForm();
         $form->setValuesByPost();
-
         $reg_start = $this->loadDate('start');
         $reg_end = $this->loadDate('end');
-        echo $reg_start;
-        echo $reg_end;
         $group_number = array();
         $created = false;
         $number = $this->group_count->getValue();
@@ -234,39 +228,28 @@ class ilCourseImportGroupGUI
         $password = $this->pass->getValue();
         $reg_type = $this->reg_proc->getValue();
 
-        
-        
-        
-      $query = "select od.title as 'Übungsruppe'
+        $query = "select od.title as 'Übungsruppe'
                   from ilias.object_data od
                   join ilias.object_reference obr on od.obj_id = obr.obj_id
                   join ilias.crs_items crsi on obr.ref_id = crsi.obj_id
                   where (od.type = 'grp') and (obr.deleted is null) and (crsi.parent_id = '".$_GET['ref_id']."') ";
 
-       $results = $ilDB->query($query);
-       
-                   while ($record = $ilDB->fetchAssoc($results)){
+        $results = $ilDB->query($query);
+            while ($record = $ilDB->fetchAssoc($results)){
                    array_push($group_number,$record);
-                }
-          
-  
-
+            }
         $result = count($group_number);
        
         $nn = 1;
         
-      
-
         if ($result > 0){
+            $result ++;
+            $nn = $result;
+            $number = $number + $nn - 1;
+        }
 
-       $result ++;    
-       $nn = $result;
-       $number = $number + $nn - 1;
-       }
-       
-     
 
-            for ($n = $nn ; $n <= $number; $n++) {
+        for ($n = $nn ; $n <= $number; $n++) {
                 $group = new ilObjGroup();
                 $group->setTitle('Gruppe '.$n);
                 $group->setGroupType(GRP_TYPE_CLOSED);
@@ -283,13 +266,10 @@ class ilCourseImportGroupGUI
                 $group->createReference();
                 $group->putInTree($_GET['ref_id']);
                 $group->setPermissions($_GET['ref_id']);
-             
-                
-               
-              
+
                 $this->courses['created'] .= ilObject2::_lookupTitle(ilObject2::_lookupObjId($_GET['ref_id'])) . ' - ' . $group->getTitle() . '<br>';
                 $created = true;
-            }
+        }
             if($created) {
                 ilUtil::sendSuccess(sprintf($this->pl->txt(self::CREATION_SUCCEEDED), $this->courses['created'], $this->courses['updated'], $this->courses['refs'], $this->courses['refs_del']));
                 $form = $this->initForm();
