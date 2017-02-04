@@ -22,7 +22,8 @@ require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
  * 
  *  This class implements the functionality of the "groupcreator tab" which are
  *  the number of groups (checks the db and numbers the group consecutively), 
- *  maximum members and how to join the groups. 
+ *  maximum members, how to join the group (password ord not) and from/till which
+ *  date.   
  *  
  */
 class ilCourseImportGroupGUI
@@ -251,7 +252,20 @@ class ilCourseImportGroupGUI
 
         for ($n = $nn ; $n <= $number; $n++) {
                 $group = new ilObjGroup();
-                $group->setTitle('Gruppe '.$n);
+                
+                
+                
+                
+                if($number<10){   //is necessary for numerical sort
+                
+                $group->setTitle('Gruppe 0'.$n);
+                
+                }
+                
+                else
+                {
+                     $group->setTitle('Gruppe '.$n);
+                }
                 $group->setGroupType(GRP_TYPE_CLOSED);
                 $group->setRegistrationType($reg_type);
                 if($reg_type == GRP_REGISTRATION_PASSWORD){
