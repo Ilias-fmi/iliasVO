@@ -235,7 +235,21 @@ class ilCourseImportGroupDisplayGUI
      */
     protected function updateGroup($obj_id, $title, $description, $tutor, $members, $reg_start, $reg_end){
 
-        //TODO: Manipulate DB an den Richtigen Stellen /(Select über obj_id in object_data / group_settings!
+        $query = "update object_data
+        
+                    set od.title = '".$title."'         
+         
+                    from ilias.object_data as od
+                    
+                    join ilias.object_reference as oref on oref.obj_id = od.obj_id 
+                    join ilias.grp_settings gs on gs.obj_id = oref.obj_id
+                    join ilias.crs_items citem on citem.obj_id = oref.ref_id
+                    left join (select * from ilias.obj_members om where om.tutor = 1) as obm on obm.obj_id = oref.obj_id
+                    left join ilias.usr_data ud on ud.usr_id = obm.usr_id                    
+                    
+                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$_GET['ref_id']."'";
+                    
+                    //od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end, od.obj_id
 
     }
 
@@ -247,13 +261,13 @@ class ilCourseImportGroupDisplayGUI
 
         $data = array();
         $query = "select od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end, od.obj_id
-from ilias.object_data as od
-join ilias.object_reference as oref on oref.obj_id = od.obj_id 
-join ilias.grp_settings gs on gs.obj_id = oref.obj_id
-join ilias.crs_items citem on citem.obj_id = oref.ref_id
-left join (select * from ilias.obj_members om where om.tutor = 1) as obm on obm.obj_id = oref.obj_id
-left join ilias.usr_data ud on ud.usr_id = obm.usr_id
-where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$ref_id."'";
+                    from ilias.object_data as od
+                    join ilias.object_reference as oref on oref.obj_id = od.obj_id 
+                    join ilias.grp_settings gs on gs.obj_id = oref.obj_id
+                    join ilias.crs_items citem on citem.obj_id = oref.ref_id
+                    left join (select * from ilias.obj_members om where om.tutor = 1) as obm on obm.obj_id = oref.obj_id
+                    left join ilias.usr_data ud on ud.usr_id = obm.usr_id
+                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$ref_id."'";
         $result = $ilDB->query($query);
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);
