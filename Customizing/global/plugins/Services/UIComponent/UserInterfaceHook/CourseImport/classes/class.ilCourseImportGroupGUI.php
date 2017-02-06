@@ -69,6 +69,8 @@ class ilCourseImportGroupGUI
     
     protected $group_time_start;
     
+    protected $group_name;
+    
 
 
     public function __construct() {
@@ -153,6 +155,10 @@ class ilCourseImportGroupGUI
         $form->setTitle($this->pl->txt('group_create_title'));
         $form->setId('group_create');
         $form->setFormAction($this->ctrl->getFormAction($this));
+        
+        $this->group_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
+        $this->group_name->setRequired(true);
+        $form->addItem($this->group_name);
 
         $this->group_count = new ilNumberInputGUI($this->pl->txt('group_count'), 'group_count');
         $this->members = new ilNumberInputGUI($this->pl->txt('members'), 'members');
@@ -187,7 +193,8 @@ class ilCourseImportGroupGUI
 
         $time_limit->addSubItem($dur);
         $form->addItem($time_limit);
-
+        
+        
         $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
         
         
@@ -224,6 +231,7 @@ class ilCourseImportGroupGUI
         $reg_end = $this->loadDate('end');
         $group_number = array();
         $created = false;
+        $prefix = $this->group_name->getValue();
         $number = $this->group_count->getValue();
         $members = $this->members->getValue();
         $password = $this->pass->getValue();
@@ -258,13 +266,13 @@ class ilCourseImportGroupGUI
                 
                 if($number<10){   //is necessary for numerical sort
                 
-                $group->setTitle('Gruppe 0'.$n);
+                $group->setTitle($prefix.' 0'.$n);
                 
                 }
                 
                 else
                 {
-                     $group->setTitle('Gruppe '.$n);
+                     $group->setTitle($prefix.' '.$n);
                 }
                 $group->setGroupType(GRP_TYPE_CLOSED);
                 $group->setRegistrationType($reg_type);
