@@ -1,3 +1,11 @@
+password#:#Passwort
+grp_reg_period#:#Zeitraum
+cal_start#:#Anfang
+cal_end#:#Ende
+grp_reg_limited#:#Zeitlich begrenzter Beitritt
+grp_reg_passwd_info_screen#:#&Ouml;ffentliche Gruppe
+grp_reg_direct_info_screen#:#Geschlossene Gruppe
+grp_registration_type#:#Typ
 userInGroupNotExistent#:#Benutzer existiert in gew&auml;hlter Gruppe nicht.
 userInGroupExistent#:#Benuter existiert in gew&uuml;nschter Gruppe bereits.
 groupNotExistent#:#Gruppe existiert nicht.

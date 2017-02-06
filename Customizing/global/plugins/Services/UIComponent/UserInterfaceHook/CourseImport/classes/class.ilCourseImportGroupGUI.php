@@ -176,11 +176,11 @@ class ilCourseImportGroupGUI
         $this->reg_proc->addOption($opt);
         $form->addItem($this->reg_proc);
 
-        $time_limit = new ilCheckboxInputGUI($this->lng->txt('grp_reg_limited'),'reg_limit_time');
+        $time_limit = new ilCheckboxInputGUI($this->pl->txt('grp_reg_limited'),'reg_limit_time');
         $this->lng->loadLanguageModule('dateplaner');
         include_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
         $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
-        $dur = new ilDateDurationInputGUI($this->lng->txt('grp_reg_period'),'reg');
+        $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg');
         $dur->setStartText($this->pl->txt('cal_start'));
         $dur->setEndText($this->pl->txt('cal_end'));
         $dur->setShowTime(true);
