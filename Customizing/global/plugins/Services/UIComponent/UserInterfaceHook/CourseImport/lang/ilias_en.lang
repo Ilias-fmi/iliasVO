@@ -1,6 +1,49 @@
+tab_link#:#Link
+save_link#:#Link
+link_exercise#:#Link exercise
+ref_id#:#Reference-ID from the database
+save_groups#:#Save changes
+group_name#:#Group name
+destination_title#:#New group
+password#:#Password
+grp_reg_period#:#Self-Registration Period
+cal_start#:#Start
+cal_end#:#End
+grp_reg_limited#:#Limited Registration Period
+grp_reg_passwd_info_screen#:#Public Group
+grp_reg_direct_info_screen#:#Closed Group
+grp_registration_type#:#Group Type
+userInGroupNotExistent#:#User doesn't exist in selected group.
+userInGroupExistent#:#User already exists in the group you try to move the user.
+groupNotExistent#:#Group is not existing.
 tab_course_import#:#Excel-/XML-Course-Import
+tab_course_management#:#Manage groups
+tab_course_management_tbl#:#Manage courses and groups
+course_search#:#Search course
+course_edit#:#Edit course
+course_title#:#Course name
+group_create#:#Create groups
+group_create_title#:#Create groups
+create_groups#:#Create
+group_count#:#Number of groups
+members#:#Limited Number of Members
+group_title#:#Current group
+group_description#:#Room and time
+group_tutor#:#Tutor
+group_max_members#:#Limited Number of Members
+group_password#:#Group password
+grp_reg_passwd_info_screen#:#Join With Group Password
+grp_reg_direct_info_screen#:#Direct Registration
+member_edit#:#Move a group member
+move_member#:#Move
+member_login#:#Username
+member_description#:#Please enter the username of the user, as well as the group name of the group you want to move the user.
+save_settings#:#Save
+name_input#:#Title
+id_input#:#Course ID
 back#:#Back
 form_title#:#Excel-/XML-Course-Import
+form_title_management#:#Course administration
 file_input#:#Upload Excel-/XML-file
 import_courses#:#Import Courses
 error_xsd#:#XSD validation: <br>%s<br>Line: %s<br><br>
@@ -17,3 +60,5 @@ error_container_ref#:#Object with Ref-ID (references) is not of type container: 
 error_large_file#:#The uploaded file is unusually big and cannot be read. Please check the excel sheet for empty rows after the filled rows and delete them.
 import_succeeded#:#Courses created:<br>%s<br>Courses updated:<br>%s<br>Course-references created:<br>%s<br>Course-references deleted:<br>%s
 import_failed#:#Course import failed. The validation exited with the following error messages:<br><br>
+creation_succeeded#:#Groups created successfully:<br>%s<br>
+creation_failed#:#Creating groups has failed. Please check your input.

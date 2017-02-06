@@ -152,7 +152,7 @@ class ilCourseImportGroupDisplayGUI
         {
 
             $form = new ilPropertyFormGUI();
-            $form->setTitle('course_edit');
+            $form->setTitle($this->pl->txt('course_edit'));
         $data = $this->getTableData($_GET['ref_id']);
 
         foreach ($data as $row){
@@ -161,12 +161,12 @@ class ilCourseImportGroupDisplayGUI
             $form->addItem($section);
             $ref_id_field = new ilNumberInputGUI($this->pl->txt("ref_id"), "ref_id");
             $ref_id_field->setDisabled(true);
-            $textfield_name = new ilTextInputGUI($this->pl->txt("group_title"), "group_name");
+            $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
             $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
             $textfield_tutor = new ilUserLoginInputGUI($this->pl->txt("group_tutor"),"tutor");
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members");
             $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
-            $dur = new ilDateDurationInputGUI($this->lng->txt('grp_reg_period'),'reg');
+            $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg');
             $dur->setStartText($this->pl->txt('cal_start'));
             $dur->setEndText($this->pl->txt('cal_end'));
             $dur->setShowTime(true);

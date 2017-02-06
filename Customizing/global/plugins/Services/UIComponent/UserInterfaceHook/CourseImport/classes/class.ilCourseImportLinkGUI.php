@@ -112,7 +112,7 @@ class ilCourseImportLinkGUI{
     {
 
         $form = new ilPropertyFormGUI();
-        $form->setTitle('link_exercise');
+        $form->setTitle($this->pl->txt('link_exercise'));
         $data = $this->getGroups($_GET['ref_id']);
 
         foreach ($data as $row){
