@@ -1,7 +1,6 @@
 ﻿<?php
 include_once("./Services/UIComponent/classes/class.ilUIHookPluginGUI.php");
 include_once("./Services/UIComponent/Explorer2/classes/class.ilExplorerBaseGUI.php");
-include_once("./Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/CourseImport/classes/class.ilNavigationMenu.php");
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
 require_once './Modules/Group/classes/class.ilObjGroup.php';
 require_once './Services/Object/classes/class.ilObject2.php';
