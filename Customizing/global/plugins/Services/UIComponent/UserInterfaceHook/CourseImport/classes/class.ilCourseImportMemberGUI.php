@@ -90,8 +90,8 @@ class ilCourseImportMemberGUI {
     }
     protected function setTitleAndIcon() {
         $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_crs.svg'));
-        $this->tpl->setTitle($this->lng->txt('obj_crss'));
-        $this->tpl->setDescription($this->lng->txt('obj_crss_desc'));
+        $this->tpl->setTitle($this->pl->txt('obj_acop'));
+        $this->tpl->setDescription($this->pl->txt('obj_acop_desc'));
     }
     /**
      *

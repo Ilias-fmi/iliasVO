@@ -62,3 +62,5 @@ import_succeeded#:#Courses created:<br>%s<br>Courses updated:<br>%s<br>Course-re
 import_failed#:#Course import failed. The validation exited with the following error messages:<br><br>
 creation_succeeded#:#Groups created successfully:<br>%s<br>
 creation_failed#:#Creating groups has failed. Please check your input.
+obj_acop#:#AdminContainer Plugin
+obj_acop_desc#:#Here you can easily create or modifiy Groups.

@@ -62,3 +62,5 @@ import_succeeded#:#Kurse neu angelegt:<br>%s<br>Kurse aktualisiert:<br>%s<br>Kur
 import_failed#:#Importieren der Kurse fehlgeschlagen. Die Validierung ergab folgende Fehlermeldungen:<br><br>
 creation_succeeded#:#Gruppen neu angelegt:<br>%s<br>
 creation_failed#:#Erstellen der Gruppen fehlgeschlagen, überprüfen Sie ihre Eingaben.
+obj_acop#:#AdminContainer Plugin
+obj_acop_desc#:#Hier können sie einfach Gruppen erstellen und bearbeiten.
