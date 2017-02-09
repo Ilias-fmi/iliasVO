@@ -11,6 +11,8 @@ require_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
  * Time: 13:50
  * @ilCtrl_IsCalledBy ilCourseImportGroupDisplayGUI: ilUIPluginRouterGUI
  * @ilCtrl_Calls      ilCourseImportGroupDisplayGUI: ilObjCourseAdministrationGUI
+ * @ilCtrl_Calls      ilCourseImportGroupDisplayGUI: ilRepositorySearchGUI
+ * @ilCtrl_Calls      ilCourseImportGroupDisplayGUI: ilObjCourseGUI
  */
 class ilCourseImportGroupDisplayGUI
 {
@@ -150,10 +152,11 @@ class ilCourseImportGroupDisplayGUI
      */
     protected function initForm()
         {
+            global $lng, $ilCtrl;
 
             $form = new ilPropertyFormGUI();
             $form->setTitle($this->pl->txt('course_edit'));
-        $data = $this->getTableData($_GET['ref_id']);
+            $data = $this->getTableData($_GET['ref_id']);
 
         foreach ($data as $row){
             $section = new ilFormSectionHeaderGUI();
@@ -163,7 +166,21 @@ class ilCourseImportGroupDisplayGUI
             $ref_id_field->setDisabled(true);
             $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
             $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
-            $textfield_tutor = new ilUserLoginInputGUI($this->pl->txt("group_tutor"),"tutor");
+
+            //$textfield_tutor = new ilUserLoginInputGUI($this->pl->txt("group_tutor"),"tutor");
+
+            $a_options = array(
+                'auto_complete_name'	=> $lng->txt('user'),
+            );
+
+            $ajax_url = $ilCtrl->getLinkTargetByClass(array(get_class($this),'ilRepositorySearchGUI'),
+                'doUserAutoComplete', '', true,false);
+
+            include_once("./Services/Form/classes/class.ilTextInputGUI.php");
+            var_dump(count($row));
+            $textfield_tutor = new ilTextInputGUI($a_options['auto_complete_name'], 'tutor');
+            $textfield_tutor->setDataSource($ajax_url);
+
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members");
             $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
             $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg');
@@ -182,7 +199,9 @@ class ilCourseImportGroupDisplayGUI
             $form->addItem($ref_id_field);
             $form->addItem($textfield_name);
             $form->addItem($textfield_description);
+
             $form->addItem($textfield_tutor);
+
             $form->addItem($textfield_members);
             $form->addItem($dur);
 
@@ -244,7 +263,7 @@ class ilCourseImportGroupDisplayGUI
                     join ilias.object_reference as oref on oref.obj_id = od.obj_id 
                     join ilias.grp_settings gs on gs.obj_id = oref.obj_id
                     join ilias.crs_items citem on citem.obj_id = oref.ref_id
-                    left join (select * from ilias.obj_members om where om.tutor = 1) as obm on obm.obj_id = oref.obj_id
+                    left join (select * from ilias.obj_members om where om.admin = 1) as obm on obm.obj_id = oref.obj_id
                     left join ilias.usr_data ud on ud.usr_id = obm.usr_id                    
                     
                     where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$_GET['ref_id']."'";
@@ -265,7 +284,7 @@ class ilCourseImportGroupDisplayGUI
                     join ilias.object_reference as oref on oref.obj_id = od.obj_id 
                     join ilias.grp_settings gs on gs.obj_id = oref.obj_id
                     join ilias.crs_items citem on citem.obj_id = oref.ref_id
-                    left join (select * from ilias.obj_members om where om.tutor = 1) as obm on obm.obj_id = oref.obj_id
+                    left join (select * from ilias.obj_members om where om.admin = 1) as obm on obm.obj_id = oref.obj_id
                     left join ilias.usr_data ud on ud.usr_id = obm.usr_id
                     where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$ref_id."'";
         $result = $ilDB->query($query);
@@ -274,6 +293,34 @@ class ilCourseImportGroupDisplayGUI
         }
         return $data;
 
+    }
+
+    /**
+     * Do auto completion
+     * @return void
+     */
+    protected function doUserAutoComplete()
+    {
+
+
+        $a_fields = array('login','firstname','lastname','email');
+        $result_field = 'login';
+
+
+        include_once './Services/User/classes/class.ilUserAutoComplete.php';
+        $auto = new ilUserAutoComplete();
+
+        if(($_REQUEST['fetchall']))
+        {
+            $auto->setLimit(ilUserAutoComplete::MAX_ENTRIES);
+        }
+
+        $auto->setSearchFields($a_fields);
+        $auto->setResultField($result_field);
+        $auto->enableFieldSearchableCheck(true);
+
+        echo $auto->getList($_REQUEST['term']);
+        exit();
     }
 
     protected function checkAccess()

@@ -2,7 +2,6 @@
 require_once './Services/Form/classes/class.ilTextInputGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
-//require_once './Services/Form/classes/class.ilObjCourseGUI.php';
 
 define('IL_GRP_MEMBER',5);
 
@@ -126,7 +125,7 @@ class ilCourseImportMemberGUI {
     }
 
     protected function initForm(){
-        global $lng, $ilToolbar, $ilCtrl;
+        global $lng, $ilCtrl;
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->pl->txt('member_edit'));
         $form->setDescription($this->pl->txt('member_description'));
