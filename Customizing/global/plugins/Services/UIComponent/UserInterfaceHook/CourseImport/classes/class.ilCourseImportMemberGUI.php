@@ -2,6 +2,7 @@
 require_once './Services/Form/classes/class.ilTextInputGUI.php';
 require_once './Services/Database/classes/class.ilDB.php';
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
+//require_once './Services/Form/classes/class.ilObjCourseGUI.php';
 
 define('IL_GRP_MEMBER',5);
 
@@ -12,6 +13,9 @@ define('IL_GRP_MEMBER',5);
  * Time: 12:40
  * @ilCtrl_IsCalledBy ilCourseImportMemberGUI: ilUIPluginRouterGUI
  * @ilCtrl_Calls      ilCourseImportMemberGUI: ilObjCourseAdministrationGUI
+ * @ilCtrl_Calls      ilCourseImportMemberGUI: ilRepositorySearchGUI
+ * @ilCtrl_Calls      ilCourseImportMemberGUI: ilObjCourseGUI
+ *
 
  */
 class ilCourseImportMemberGUI {
@@ -122,27 +126,71 @@ class ilCourseImportMemberGUI {
     }
 
     protected function initForm(){
+        global $lng, $ilToolbar, $ilCtrl;
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->pl->txt('member_edit'));
         $form->setDescription($this->pl->txt('member_description'));
         $form->setId('member_edit');
         $form->setFormAction($this->ctrl->getFormAction($this));
 
-        $this->memberLogin = new ilTextInputGUI($this->pl->txt('member_login'), 'member_login');
+        //$this->memberLogin = new ilTextInputGUI($this->pl->txt('member_login'), 'member_login');
+
+        $a_options = array(
+            'auto_complete_name'	=> $lng->txt('user'),
+        );
+
+        $ajax_url = $ilCtrl->getLinkTargetByClass(array(get_class($this),'ilRepositorySearchGUI'),
+            'doUserAutoComplete', '', true,false);
+
+        include_once("./Services/Form/classes/class.ilTextInputGUI.php");
+        $ul = new ilTextInputGUI($a_options['auto_complete_name'], 'user_login');
+        $ul->setDataSource($ajax_url);
+        //$ul->setSize($a_options['auto_complete_size']);
+
+
+
         $this->groupTitle = new ilTextInputGUI($this->pl->txt('group_title'), 'group_title');
         $this->destinationTitle = new ilTextInputGUI($this->pl->txt('destination_title'), 'destination_title');
-        $this->memberLogin->setRequired(true);
+        //$this->memberLogin->setRequired(true);
         $this->groupTitle->setRequired(true);
         $this->destinationTitle->setRequired(true);
 
 
 
-        $form->addItem($this->memberLogin);
+        $form->addItem($ul);
         $form->addItem($this->groupTitle);
         $form->addItem($this->destinationTitle);
         $form->addCommandButton('moveMember', $this->pl->txt('move_member'));
 
         return $form;
+    }
+
+    /**
+     * Do auto completion
+     * @return void
+     */
+    protected function doUserAutoComplete()
+    {
+
+
+        $a_fields = array('login','firstname','lastname','email');
+        $result_field = 'login';
+
+
+        include_once './Services/User/classes/class.ilUserAutoComplete.php';
+        $auto = new ilUserAutoComplete();
+
+        if(($_REQUEST['fetchall']))
+        {
+            $auto->setLimit(ilUserAutoComplete::MAX_ENTRIES);
+        }
+
+        $auto->setSearchFields($a_fields);
+        $auto->setResultField($result_field);
+        $auto->enableFieldSearchableCheck(true);
+
+        echo $auto->getList($_REQUEST['term']);
+        exit();
     }
 
     protected function moveMember(){
