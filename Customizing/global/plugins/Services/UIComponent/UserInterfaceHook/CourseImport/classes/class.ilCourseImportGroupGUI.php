@@ -10,6 +10,7 @@ require_once './Services/Database/classes/class.ilDB.php';
 require_once './Services/Form/classes/class.ilRadioGroupInputGUI.php';
 require_once './Services/Form/classes/class.ilRadioOption.php';
 require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
+require_once './Modules/Folder/classes/class.ilObjFolder.php';
 
 /**
  * Created by PhpStorm.
@@ -69,6 +70,9 @@ class ilCourseImportGroupGUI
     protected $group_time_start;
     
     protected $group_name;
+
+    protected $group_folder_name;
+    protected $group_folder_name_checkbox;
     
 
 
@@ -192,8 +196,13 @@ class ilCourseImportGroupGUI
 
         $time_limit->addSubItem($dur);
         $form->addItem($time_limit);
-        
-        
+
+        $this->group_folder_name_checkbox = new ilCheckboxInputGUI($this->pl->txt('group_folder_name_checkbox'),'group_folder_name_checkbox');
+        $this->group_folder_name = new ilTextInputGUI($this->pl->txt("group_folder_name"),"group_folder_name");
+        $this->group_folder_name_checkbox->addSubItem($this->group_folder_name);
+        $form->addItem($this->group_folder_name_checkbox);
+
+
         $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
         
         
@@ -235,6 +244,21 @@ class ilCourseImportGroupGUI
         $members = $this->members->getValue();
         $password = $this->pass->getValue();
         $reg_type = $this->reg_proc->getValue();
+        $folder_title = $this->group_folder_name->getValue();
+
+        if ($_POST['group_folder_name_checkbox']){
+
+            $courseFolder = new ilObjFolder();
+            $courseFolder->setTitle($folder_title);
+            $courseFolder->create();
+            $courseFolder->createReference();
+            $courseFolder->putInTree($_GET['ref_id']);
+            $courseFolder->setPermissions($_GET['ref_id']);
+
+        }
+
+        $folder_check = $this->group_folder_name_checkbox->getValue();
+        $folder_title = $this->group_folder_name->getValue();
 
         $query = "select od.title as 'Übungsruppe'
                   from ilias.object_data od
@@ -259,10 +283,7 @@ class ilCourseImportGroupGUI
 
         for ($n = $nn ; $n <= $number; $n++) {
                 $group = new ilObjGroup();
-                
-                
-                
-                
+
                 if($number<10){   //is necessary for numerical sort
                 
                 $group->setTitle($prefix.' 0'.$n);
@@ -287,6 +308,18 @@ class ilCourseImportGroupGUI
                 $group->createReference();
                 $group->putInTree($_GET['ref_id']);
                 $group->setPermissions($_GET['ref_id']);
+
+                var_dump($folder_check);
+                if ($_POST['group_folder_name_checkbox']){
+
+                    $groupFolder = new ilObjFolder();
+                    $groupFolder->setTitle($folder_title);
+                    $groupFolder->create();
+                    $groupFolder->createReference();
+                    $groupFolder->putInTree($group->getRefId());
+                    $groupFolder->setPermissions($group->getRefId());
+
+                }
 
                 $this->courses['created'] .= ilObject2::_lookupTitle(ilObject2::_lookupObjId($_GET['ref_id'])) . ' - ' . $group->getTitle() . '<br>';
                 $created = true;
