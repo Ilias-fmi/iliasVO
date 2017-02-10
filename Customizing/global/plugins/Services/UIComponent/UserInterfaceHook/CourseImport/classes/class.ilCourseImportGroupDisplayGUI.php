@@ -172,7 +172,6 @@ class ilCourseImportGroupDisplayGUI
             $ref_id_field->setDisabled(true);
             $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
             $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
-            //$textfield_tutor = new ilUserLoginInputGUI($this->pl->txt("group_tutor"),"tutor");
             $textfield_tutor = new ilTextInputGUI($a_options['auto_complete_name'], 'tutor'.$n);
             $textfield_tutor->setDataSource($ajax_url);
 

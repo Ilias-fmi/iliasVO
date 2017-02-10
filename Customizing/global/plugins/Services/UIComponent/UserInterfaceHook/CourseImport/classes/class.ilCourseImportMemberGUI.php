@@ -146,10 +146,17 @@ class ilCourseImportMemberGUI {
         $ul->setDataSource($ajax_url);
         //$ul->setSize($a_options['auto_complete_size']);
 
+        //$this->groupTitle = new ilTextInputGUI($this->pl->txt('group_title'), 'group_title');
+        $this->groupTitle = new ilSelectInputGUI($this->pl->txt('group_title'), 'group_title');
+        $this->groupTitle->setOptions($this->getGroups());
 
+        //$this->destinationTitle = new ilTextInputGUI($this->pl->txt('destination_title'), 'destination_title');
+        $this->destinationTitle = new ilSelectInputGUI($this->pl->txt('destination_title'), 'destination_title');
+        $this->destinationTitle->setOptions($this->getGroups());
 
-        $this->groupTitle = new ilTextInputGUI($this->pl->txt('group_title'), 'group_title');
-        $this->destinationTitle = new ilTextInputGUI($this->pl->txt('destination_title'), 'destination_title');
+        $test = $this->getGroups();
+        var_dump($test);
+
         //$this->memberLogin->setRequired(true);
         $this->groupTitle->setRequired(true);
         $this->destinationTitle->setRequired(true);
@@ -374,6 +381,24 @@ class ilCourseImportMemberGUI {
         } else {
             return true;
         }
+    }
+
+    protected function getGroups(){
+
+        global $ilDB;
+
+        $data = array();
+        $query = "select od.title
+                    from ilias.object_data as od
+                    join ilias.object_reference as oref on oref.obj_id = od.obj_id
+                    join ilias.crs_items citem on citem.obj_id = oref.ref_id
+                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$_GET['ref_id']."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        return $data;
+
     }
 
     protected function checkAccess() {
