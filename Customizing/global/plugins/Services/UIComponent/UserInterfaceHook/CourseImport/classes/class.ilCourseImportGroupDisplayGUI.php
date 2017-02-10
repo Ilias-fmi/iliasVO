@@ -80,6 +80,8 @@ class ilCourseImportGroupDisplayGUI
 
         $this->tabs->activateSubTab('course_edit');
 
+        $this->ctrl->getRedirectSource();
+
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
             'ilrepositorygui',
             'ilrepositorygui',
@@ -156,6 +158,7 @@ class ilCourseImportGroupDisplayGUI
 
             $form = new ilPropertyFormGUI();
             $form->setTitle($this->pl->txt('course_edit'));
+            $form->setFormAction($this->ctrl->getFormAction($this));
             $data = $this->getTableData($_GET['ref_id']);
             $a_options = array(
                 'auto_complete_name'	=> $this->pl->txt('group_tutor'),

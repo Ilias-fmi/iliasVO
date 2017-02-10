@@ -65,6 +65,8 @@ class ilCourseImportLinkGUI{
 
         $this->tabs->addTab('link', $this->pl->txt('tab_link'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportLinkGUI')));
 
+        $this->ctrl->getRedirectSource();
+
         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
             'ilexercisehandlergui',
             'ilexercisehandlergui',
@@ -112,6 +114,7 @@ var_dump($cmd);
 
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->pl->txt('link_exercise'));
+        $form->setFormAction($this->ctrl->getFormAction($this));
         $data = $this->getGroups($_GET['ref_id']);
 
         foreach ($data as $row){
