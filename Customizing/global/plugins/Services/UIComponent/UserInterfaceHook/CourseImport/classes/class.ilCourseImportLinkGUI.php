@@ -86,7 +86,7 @@ class ilCourseImportLinkGUI{
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
         $this->prepareOutput();
-
+var_dump($cmd);
         switch ($cmd) {
             default:
                 $this->$cmd();
@@ -100,10 +100,10 @@ class ilCourseImportLinkGUI{
     /**
      * default command
      */
-    protected function view()
-    {
-        $this->form =$this->initForm();
-        $this->tpl->setContent($this->form->getHTML());
+    protected function view() {
+
+        $form = $this->initForm();
+        $this->tpl->setContent($form->getHTML());
 
     }
 
@@ -118,24 +118,90 @@ class ilCourseImportLinkGUI{
 
 
             $checkbox_link = new ilCheckboxInputGUI($row['title'], $row['obj_id']);
-            //$checkbox_link = new ilCheckboxInputGUI($row['title'], $row['obj_id']);
-           // $checkbox_link->setValue($this->isReferenced());
+           // $checkbox_link->setValue($this->isReferenced($row['obj_id'],$_GET['ref_id']));
             $form->addItem($checkbox_link);
 
 
 
         }
-        $form->addCommandButton('saveLink',$this->pl->txt('save_link'));
+        $form->addCommandButton('link',$this->pl->txt('save_link'));
+        $form->addCommandButton('bla',"bla");
         return $form;
     }
 
-    protected function checkAccess()
-    {
-        global $ilAccess, $ilErr;
-        if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {
-            $ilErr->raiseError($this->lng->txt("no_permission"), $ilErr->WARNING);
-        }
+    protected function isReferenced($group_id,$exercise_id){
+
     }
+    protected function getAdminFolderIds(){
+        $ids = array();
+
+
+        //TODO: get Ref_IDS of AdminFolders in Groups.
+        //temporarilly hard coded
+        $ids = [108,109,110];
+
+        return $ids;
+    }
+
+    protected function saveLink()
+    {
+        global $rbacreview, $log, $tree, $ilObjDataCache, $ilUser;
+
+        $this->dosomethincrazy();
+
+            $linked_to_folders = array();
+
+            include_once "Services/AccessControl/classes/class.ilRbacLog.php";
+            $rbac_log_active = ilRbacLog::isActive();
+
+            $group_admin_folder_ids = $this->getAdminFolderIds();
+
+            foreach($group_admin_folder_ids as $folder_ref_id)
+            {
+                $linked_to_folders[] = $ilObjDataCache->lookupTitle($ilObjDataCache->lookupObjId($folder_ref_id));
+
+                //get Ref_id of Excercise you want to link
+                $ref_id = $_GET['ref_id'];
+
+                    // get node data
+                    $top_node = $tree->getNodeData($ref_id);
+
+                    // get subnodes of top nodes
+                    $subnodes[$ref_id] = $tree->getSubtree($top_node);
+
+
+                // now move all subtrees to new location
+                foreach($subnodes as $key => $subnode)
+                {
+                    // first paste top_node....
+                    $obj_data = ilObjectFactory::getInstanceByRefId($key);
+                    $new_ref_id = $obj_data->createReference();
+                    $obj_data->putInTree($folder_ref_id);
+                    $obj_data->setPermissions($folder_ref_id);
+
+                    // rbac log
+                    if($rbac_log_active)
+                    {
+                        $rbac_log_roles = $rbacreview->getParentRoleIds($new_ref_id, false);
+                        $rbac_log = ilRbacLog::gatherFaPa($new_ref_id, array_keys($rbac_log_roles), true);
+                        ilRbacLog::add(ilRbacLog::LINK_OBJECT, $new_ref_id, $rbac_log, $key);
+                    }
+
+                    // BEGIN ChangeEvent: Record link event.
+                    $node_data = $tree->getNodeData($new_ref_id);
+                    ilChangeEvent::_recordWriteEvent($node_data['obj_id'], $ilUser->getId(), 'add',
+                        $ilObjDataCache->lookupObjId($folder_ref_id));
+                    ilChangeEvent::_catchupWriteEvents($node_data['obj_id'], $ilUser->getId());
+                    // END PATCH ChangeEvent: Record link event.
+                }
+
+                $log->write(__METHOD__.', link finished');
+
+
+            ilUtil::sendSuccess(sprintf($this->lng->txt('mgs_objects_linked_to_the_following_folders'), implode(', ', $linked_to_folders)), true);
+        } // END LINK
+    }
+
 
     protected function getGroups(){
         global $ilDB;
@@ -153,4 +219,11 @@ class ilCourseImportLinkGUI{
         return $data;
     }
 
+    protected function checkAccess()
+    {
+        global $ilAccess, $ilErr;
+        if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {
+            $ilErr->raiseError($this->lng->txt("no_permission"), $ilErr->WARNING);
+        }
+    }
 }
