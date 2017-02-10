@@ -157,6 +157,12 @@ class ilCourseImportGroupDisplayGUI
             $form = new ilPropertyFormGUI();
             $form->setTitle($this->pl->txt('course_edit'));
             $data = $this->getTableData($_GET['ref_id']);
+            $a_options = array(
+                'auto_complete_name'	=> $this->pl->txt('group_tutor'),
+            );
+            $ajax_url = $ilCtrl->getLinkTargetByClass(array(get_class($this),'ilRepositorySearchGUI'),
+                'doUserAutoComplete', '', true,false);
+            $n = 1;
 
         foreach ($data as $row){
             $section = new ilFormSectionHeaderGUI();
@@ -166,19 +172,8 @@ class ilCourseImportGroupDisplayGUI
             $ref_id_field->setDisabled(true);
             $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
             $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
-
             //$textfield_tutor = new ilUserLoginInputGUI($this->pl->txt("group_tutor"),"tutor");
-
-            $a_options = array(
-                'auto_complete_name'	=> $lng->txt('user'),
-            );
-
-            $ajax_url = $ilCtrl->getLinkTargetByClass(array(get_class($this),'ilRepositorySearchGUI'),
-                'doUserAutoComplete', '', true,false);
-
-            include_once("./Services/Form/classes/class.ilTextInputGUI.php");
-            var_dump(count($row));
-            $textfield_tutor = new ilTextInputGUI($a_options['auto_complete_name'], 'tutor');
+            $textfield_tutor = new ilTextInputGUI($a_options['auto_complete_name'], 'tutor'.$n);
             $textfield_tutor->setDataSource($ajax_url);
 
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members");
@@ -204,6 +199,7 @@ class ilCourseImportGroupDisplayGUI
 
             $form->addItem($textfield_members);
             $form->addItem($dur);
+            $n=$n+1;
 
         }
         $form->addCommandButton('saveGroups',$this->pl->txt('save_groups'));
