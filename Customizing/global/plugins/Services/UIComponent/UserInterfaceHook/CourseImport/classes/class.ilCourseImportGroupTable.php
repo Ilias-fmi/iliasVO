@@ -5,6 +5,8 @@ require_once './Services/Table/classes/class.ilTable2GUI.php';
  * User: Manuel
  * Date: 19.12.2016
  * Time: 12:34
+ *
+ *  Is needed for the edit course tab
  */
 class ilCourseImportGroupTable extends ilTable2GUI{
 
