@@ -250,25 +250,51 @@ class ilCourseImportGroupDisplayGUI
      * @param $reg_end ilDateTime Start of Registration Period
      */
     protected function updateGroup($obj_id, $title, $description, $tutor, $members, $reg_start, $reg_end){
-
-        $query = "update object_data
         
-                    set od.title = '".$title."'         
-         
-                    from ilias.object_data as od
-                    
-                    join ilias.object_reference as oref on oref.obj_id = od.obj_id 
-                    join ilias.grp_settings gs on gs.obj_id = oref.obj_id
-                    join ilias.crs_items citem on citem.obj_id = oref.ref_id
-                    left join (select * from ilias.obj_members om where om.admin = 1) as obm on obm.obj_id = oref.obj_id
-                    left join ilias.usr_data ud on ud.usr_id = obm.usr_id                    
-                    
-                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$_GET['ref_id']."'";
-                    
-                    //od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end, od.obj_id
+        global $ilDB;
 
+  //     $query = "UPDATE grp_settings ".
+  //		"SET information = ".$description.", ".
+  //		"registration_start = ".$reg_start.", ".
+  //		"registration_end = ".$reg_end.", ".
+  //		"WHERE obj_id = ".$obj_id;
+     
+  
+        
+        
+        $query1 = "UPDATE ilias.object_data as od
+                           
+                SET od.title = '".$title."' , od.description = '".$description."'
+                             
+                WHERE od.obj_id = '".$obj_id."'";
+        
+        $query2 = "UPDATE ilias.grp_settings as gs
+        
+                   SET gs.registration_start = '".$reg_start."' , gs.registration_end = '"$reg_end"' , gs.registration_max_members ='".$members."'
+        
+                   WHERE gs.obj_id = '".$obj_id."'
+        
+        ";
+        
+       // $query3 = "UPDATE ilias.object_members AS om
+        //          JOIN ilias.usr_data AS ud ON ud.usr_id = om.usr_id  
+        //
+        //           SET om.admin = 1
+        //           
+        //           WHERE om.obj_id = '".$obj_id."' AND ud.     = '".$tutor."' ";
+                 
+            $ilDB->manipulate($query1);
+            $ilDB->manipulate($query2);
+         // $ilDB->manipulate($query3);
+         
+        
     }
 
+        //JOIN ilias.object_reference as oref ON oref.obj_id = od.obj_id 
+       // JOIN ilias.grp_settings gs ON gs.obj_id = oref.obj_id
+              // JOIN ilias.crs_items citem ON citem.obj_id = oref.ref_id
+                //LEFT JOIN (select * from ilias.obj_members om where om.admin = 1) as obm ON obm.obj_id = oref.obj_id
+                //LEFT JOIN ilias.usr_data ud ON ud.usr_id = obm.usr_id    
 
 
     protected function getTableData($ref_id){
