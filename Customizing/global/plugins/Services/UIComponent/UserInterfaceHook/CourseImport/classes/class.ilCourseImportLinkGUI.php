@@ -117,10 +117,12 @@ var_dump($cmd);
         $form->setFormAction($this->ctrl->getFormAction($this));
         $data = $this->getGroups($_GET['ref_id']);
 
+        var_dump($data);
+
         foreach ($data as $row){
 
 
-            $checkbox_link = new ilCheckboxInputGUI($row['title'], $row['obj_id']);
+            $checkbox_link = new ilCheckboxInputGUI($row['title'], $row['ref_id']);
            //$checkbox_link->setValue($this->isReferenced($row['obj_id'],$_GET['ref_id']));
             $form->addItem($checkbox_link);
 
@@ -128,7 +130,6 @@ var_dump($cmd);
 
         }
         $form->addCommandButton('link',$this->pl->txt('save_link'));
-        $form->addCommandButton('bla',"bla");
         return $form;
     }
 
@@ -151,11 +152,15 @@ var_dump($cmd);
             if(!is_null($checkbox->getChecked())){
 
                 $group_id = $checkbox->getPostVar();
-                array_push($group_ids,$group_id);
+                $grid = array();
+                $grid[0]=$group_id;
+                array_push($group_ids,$grid);
                 $folder_id = $this->getGroupFolderID($group_id,$folder_name);
                 if($folder_id == -2){
                     ilUtil::sendInfo('inf_group_no_named_folder'."'.$folder_name.'".'msg_linked_to_group_directory');
-                    array_push($ids,$group_id);
+                    $folder_id = array();
+                    $folder_id[0]=$group_id;
+                    array_push($ids,$folder_id);
                 }else {
                     array_push($ids, $folder_id);
                 }
@@ -173,7 +178,6 @@ var_dump($cmd);
         $exc_id = $_GET['ref_id'];
         $folder_id = $this->getParentIds($exc_id);
 
-        var_dump($folder_id);
         //get Name of Parent Folder from Exercise
         $data = array();
         $query = "select od.title from ilias.object_data as od 
@@ -213,7 +217,9 @@ var_dump($cmd);
     protected function getGroupFolderID($group_id,$folder_name){
         global $ilDB;
         if($folder_name == -1){
-            return $group_id;
+            $return = array();
+            $return[0] = $group_id;
+            return $return;
         }
         $data = array();
         $query = "select folds.ref_id from (
@@ -253,11 +259,11 @@ var_dump($cmd);
 
             $group_admin_folder_ids = $this->getAdminFolderIds();
 
-
+            var_dump($group_admin_folder_ids);
 
             foreach($group_admin_folder_ids as $folder_ref_id)
             {
-                $linked_to_folders[] = $ilObjDataCache->lookupTitle($ilObjDataCache->lookupObjId($folder_ref_id));
+                $linked_to_folders[] = $ilObjDataCache->lookupTitle($ilObjDataCache->lookupObjId($folder_ref_id[0]));
 
                 //get Ref_id of Excercise you want to link
                 $ref_id = $_GET['ref_id'];
@@ -275,8 +281,8 @@ var_dump($cmd);
                     // first paste top_node....
                     $obj_data = ilObjectFactory::getInstanceByRefId($key);
                     $new_ref_id = $obj_data->createReference();
-                    $obj_data->putInTree($folder_ref_id);
-                    $obj_data->setPermissions($folder_ref_id);
+                    $obj_data->putInTree($folder_ref_id[0]);
+                    $obj_data->setPermissions($folder_ref_id[0]);
 
                     // rbac log
                     if($rbac_log_active)
@@ -289,7 +295,7 @@ var_dump($cmd);
                     // BEGIN ChangeEvent: Record link event.
                     $node_data = $tree->getNodeData($new_ref_id);
                     ilChangeEvent::_recordWriteEvent($node_data['obj_id'], $ilUser->getId(), 'add',
-                        $ilObjDataCache->lookupObjId($folder_ref_id));
+                        $ilObjDataCache->lookupObjId($folder_ref_id[0]));
                     ilChangeEvent::_catchupWriteEvents($node_data['obj_id'], $ilUser->getId());
                     // END PATCH ChangeEvent: Record link event.
                 }
@@ -307,21 +313,17 @@ var_dump($cmd);
 
         do {
             $parent_id = $this->getParentIds($ref_id);
-        }while (!$this->isCourse($parent_id));
+            $ref_id = $parent_id[0];
+        }while (!$this->isCourse($ref_id));
 
 
-
-
-
-
-        
 
         $data = array();
-        $query = "select od.title, od.obj_id
+        $query = "select od.title, oref.ref_id
                     from ilias.object_data as od
                     join ilias.object_reference as oref on oref.obj_id = od.obj_id 
                     join ilias.crs_items citem on citem.obj_id = oref.ref_id
-                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$parent_id."'";
+                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$ref_id."'";
         $result = $ilDB->query($query);
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);
