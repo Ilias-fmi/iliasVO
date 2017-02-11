@@ -171,20 +171,20 @@ class ilCourseImportGroupDisplayGUI
             $section = new ilFormSectionHeaderGUI();
             $section->setTitle($row['title']);
             $form->addItem($section);
-            $ref_id_field = new ilNumberInputGUI($this->pl->txt("ref_id"), "ref_id");
-            $ref_id_field->setDisabled(true);
-            $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name");
-            $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description");
+            $ref_id_field = new ilNumberInputGUI($this->pl->txt("ref_id"), "ref_id".$n);
+            $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name".$n);
+            $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description".$n);
             $textfield_tutor = new ilTextInputGUI($a_options['auto_complete_name'], 'tutor'.$n);
             $textfield_tutor->setDataSource($ajax_url);
 
-            $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members");
+            $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members".$n);
             $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
-            $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg');
+            $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg'.$n);
             $dur->setStartText($this->pl->txt('cal_start'));
             $dur->setEndText($this->pl->txt('cal_end'));
             $dur->setShowTime(true);
             $ref_id_field->setValue($row['obj_id']);
+            $ref_id_field->setHiddenTitle($row['obj_id']);
             $textfield_name->setValue($row['title']);
             $textfield_description->setValue($row['description']);
             $textfield_tutor->setValue($row['login']);
@@ -210,14 +210,13 @@ class ilCourseImportGroupDisplayGUI
 
     protected function saveGroups(){
 
-
+        $this->form = $this->initForm();
+        $this->form->setValuesByPost();
         $items = $this->form->getItems();
         $group_items = array_chunk($items,7);
-        var_dump($group_items);
-        $form = new ilPropertyFormGUI();
         foreach ($group_items as $group){
 
-            $ref_id = $group[1]->getValue();
+            $ref_id = $group[1]->getHiddenTitle();
             $title = $group[2]->getValue();
             $description =$group[3]->getValue();
             $tutor=$group[4]->getValue();
@@ -236,7 +235,7 @@ class ilCourseImportGroupDisplayGUI
         }
 
 
-        $this->tpl->setContent($form->getHTML());
+        $this->tpl->setContent($this->form->getHTML());
 
 
     }
