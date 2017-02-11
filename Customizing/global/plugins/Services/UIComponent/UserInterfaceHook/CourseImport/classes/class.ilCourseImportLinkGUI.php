@@ -121,7 +121,7 @@ var_dump($cmd);
 
 
             $checkbox_link = new ilCheckboxInputGUI($row['title'], $row['obj_id']);
-           // $checkbox_link->setValue($this->isReferenced($row['obj_id'],$_GET['ref_id']));
+           //$checkbox_link->setValue($this->isReferenced($row['obj_id'],$_GET['ref_id']));
             $form->addItem($checkbox_link);
 
 
@@ -135,29 +135,125 @@ var_dump($cmd);
     protected function isReferenced($group_id,$exercise_id){
 
     }
+
+
+
+
     protected function getAdminFolderIds(){
         $ids = array();
+        $group_ids = array();
+        $form = $this->initForm();
+        $form->setValuesByPost();
+        $formitems = $form->getItems();
+        $folder_name = $this->getFolderName();
 
+        foreach($formitems as $checkbox){
+            if(!is_null($checkbox->getChecked())){
 
-        //TODO: get Ref_IDS of AdminFolders in Groups.
-        //temporarilly hard coded
-        $ids = [108,109,110];
-
+                $group_id = $checkbox->getPostVar();
+                array_push($group_ids,$group_id);
+                $folder_id = $this->getGroupFolderID($group_id,$folder_name);
+                if($folder_id == -2){
+                    ilUtil::sendInfo('inf_group_no_named_folder'."'.$folder_name.'".'msg_linked_to_group_directory');
+                    array_push($ids,$group_id);
+                }else {
+                    array_push($ids, $folder_id);
+                }
+            }
+        }
+        if($folder_name == -1){
+            return $group_ids;
+        }
         return $ids;
     }
 
-    protected function saveLink()
+    protected function getFolderName(){
+        global $ilDB;
+
+        $exc_id = $_GET['ref_id'];
+        $folder_id = $this->getParentIds($exc_id);
+
+        var_dump($folder_id);
+        //get Name of Parent Folder from Exercise
+        $data = array();
+        $query = "select od.title from ilias.object_data as od 
+                  join ilias.object_reference as oref on od.obj_id = oref.obj_id
+                  where oref.ref_id = '".$folder_id[0]."' and od.type = 'fold' ";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        var_dump($data);
+        if(empty($data)){
+            ilUtil::sendInfo('inf_parent_no_folder');
+            return -1;
+        }
+        $folder = $data[0];
+        return $folder['title'];
+    }
+    protected function getParentIds($id){
+
+        global $ilDB;
+
+        $ids = array();
+        $data = array();
+        $query = "select tree.parent from ilias.tree as tree where child = '".$id."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        foreach ($data as $folder){
+            array_push($ids,$folder['parent']);
+        }
+        return $ids;
+
+    }
+
+
+    protected function getGroupFolderID($group_id,$folder_name){
+        global $ilDB;
+        if($folder_name == -1){
+            return $group_id;
+        }
+        $data = array();
+        $query = "select folds.ref_id from (
+        select tree.parent, oref.ref_id, od.title
+        from ilias.object_data as od 
+        join ilias.object_reference as oref on od.obj_id = oref.obj_id
+        join ilias.tree as tree on tree.child = oref.ref_id
+        where od.type = 'fold') as folds
+        where folds.parent = '".$group_id."' and folds.title = '".$folder_name."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        if(empty($data)){
+            return -2;
+        }
+        $ids = array();
+        foreach ($data as $folder){
+            array_push($ids,$folder['ref_id']);
+        }
+        return $ids;
+
+    }
+
+
+
+    protected function link()
     {
         global $rbacreview, $log, $tree, $ilObjDataCache, $ilUser;
 
-        $this->dosomethincrazy();
 
             $linked_to_folders = array();
 
             include_once "Services/AccessControl/classes/class.ilRbacLog.php";
+            include_once "Services/Tracking/classes/class.ilChangeEvent.php";
             $rbac_log_active = ilRbacLog::isActive();
 
             $group_admin_folder_ids = $this->getAdminFolderIds();
+
+
 
             foreach($group_admin_folder_ids as $folder_ref_id)
             {
@@ -206,20 +302,50 @@ var_dump($cmd);
     }
 
 
-    protected function getGroups(){
+    protected function getGroups($ref_id){
         global $ilDB;
+
+        do {
+            $parent_id = $this->getParentIds($ref_id);
+        }while (!$this->isCourse($parent_id));
+
+
+
+
+
+
+        
 
         $data = array();
         $query = "select od.title, od.obj_id
                     from ilias.object_data as od
                     join ilias.object_reference as oref on oref.obj_id = od.obj_id 
                     join ilias.crs_items citem on citem.obj_id = oref.ref_id
-                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '83'";
+                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$parent_id."'";
         $result = $ilDB->query($query);
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);
         }
         return $data;
+    }
+
+    protected function isCourse($ref_id){
+        global $ilDB;
+
+        $data = array();
+        $query = "select od.title
+                    from ilias.object_data as od 
+                    join ilias.object_reference as oref on oref.obj_id = od.obj_id
+                    where od.type = 'crs' and oref.ref_id = '".$ref_id."' ";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        if(empty($data)){
+            return false;
+        }
+        return true;
+
     }
 
     protected function checkAccess()
