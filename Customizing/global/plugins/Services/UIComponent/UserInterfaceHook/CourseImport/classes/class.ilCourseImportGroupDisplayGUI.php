@@ -268,13 +268,13 @@ class ilCourseImportGroupDisplayGUI
                              
                 WHERE od.obj_id = '".$obj_id."'";
         
-        $query2 = "UPDATE ilias.grp_settings as gs
+      //  $query2 = "UPDATE ilias.grp_settings as gs
         
-                   SET gs.registration_start = '".$reg_start."' , gs.registration_end = '"$reg_end"' , gs.registration_max_members ='".$members."'
+       //            SET gs.registration_start = '".$reg_start."' , gs.registration_end = '"$reg_end"' , gs.registration_max_members ='".$members."'
         
-                   WHERE gs.obj_id = '".$obj_id."'
+         //          WHERE gs.obj_id = '".$obj_id."'
         
-        ";
+       // ";
         
        // $query3 = "UPDATE ilias.object_members AS om
         //          JOIN ilias.usr_data AS ud ON ud.usr_id = om.usr_id  
