@@ -47,9 +47,13 @@ class ilCourseImportMemberGUI {
      */
     protected $tree;
     protected $course_id;
-    protected $memberLogin;
+
+    protected $userLogin;
     protected $groupTitle;
     protected $destinationTitle;
+
+    protected $group_title;
+    protected $destination_title;
 
     public function __construct() {
         global $tree, $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
@@ -132,8 +136,6 @@ class ilCourseImportMemberGUI {
         $form->setId('member_edit');
         $form->setFormAction($this->ctrl->getFormAction($this));
 
-        //$this->memberLogin = new ilTextInputGUI($this->pl->txt('member_login'), 'member_login');
-
         $a_options = array(
             'auto_complete_name'	=> $lng->txt('user'),
         );
@@ -142,28 +144,20 @@ class ilCourseImportMemberGUI {
             'doUserAutoComplete', '', true,false);
 
         include_once("./Services/Form/classes/class.ilTextInputGUI.php");
-        $ul = new ilTextInputGUI($a_options['auto_complete_name'], 'user_login');
-        $ul->setDataSource($ajax_url);
-        //$ul->setSize($a_options['auto_complete_size']);
+        $this->userLogin = new ilTextInputGUI($a_options['auto_complete_name'], 'user_login');
+        $this->userLogin->setDataSource($ajax_url);
 
-        //$this->groupTitle = new ilTextInputGUI($this->pl->txt('group_title'), 'group_title');
         $this->groupTitle = new ilSelectInputGUI($this->pl->txt('group_title'), 'group_title');
         $this->groupTitle->setOptions($this->getGroups());
 
-        //$this->destinationTitle = new ilTextInputGUI($this->pl->txt('destination_title'), 'destination_title');
         $this->destinationTitle = new ilSelectInputGUI($this->pl->txt('destination_title'), 'destination_title');
         $this->destinationTitle->setOptions($this->getGroups());
 
-        $test = $this->getGroups();
-        var_dump($test);
-
-        //$this->memberLogin->setRequired(true);
+        $this->userLogin->setRequired(true);
         $this->groupTitle->setRequired(true);
         $this->destinationTitle->setRequired(true);
 
-
-
-        $form->addItem($ul);
+        $form->addItem($this->userLogin);
         $form->addItem($this->groupTitle);
         $form->addItem($this->destinationTitle);
         $form->addCommandButton('moveMember', $this->pl->txt('move_member'));
@@ -200,18 +194,17 @@ class ilCourseImportMemberGUI {
     }
 
     protected function moveMember(){
-        global $ilDB;
-
         $form = $this->initForm();
         $form->setValuesByPost();
-        $member_login = $this->memberLogin->getValue();
-        $group_title = $this->groupTitle->getValue();
-        $destination_title = $this->destinationTitle->getValue();
 
+        $member_login = $this->userLogin->getValue();
+        $options = $this->groupTitle->getOptions();
+        $this->group_title = $options[$this->groupTitle->getValue()];
+        $this->destination_title = $options[$this->destinationTitle->getValue()];
 
         $member_id = $this->getMemberIdByLogin($member_login);
-        $group_id = $this->getGroupIdByTitle($group_title,$this->course_id);
-        $destination_id = $this->getGroupIdByTitle($destination_title,$this->course_id);
+        $group_id = $this->getGroupIdByTitle($this->group_title,$this->course_id);
+        $destination_id = $this->getGroupIdByTitle($this->destination_title,$this->course_id);
 
         $ref = $destination_id[0];
         $ref2 = $group_id[0];
@@ -264,24 +257,24 @@ class ilCourseImportMemberGUI {
         $res = $ilDB->manipulate($query);
 
         $query = "UPDATE ilias.obj_members as om
-        SET om.obj_id = '".$destination_id['obj_id']."' WHERE om.usr_id = '".$member_id['usr_id']."' AND om.obj_id = '".$source_id['obj_id']."' AND om.member = 1";
+        SET om.obj_id = '".$destination_id['obj_id']."' WHERE om.usr_id = '".$member_id['usr_id']."' AND om.obj_id = '"
+            .$source_id['obj_id']."' AND om.member = 1";
         $ilDB->manipulate($query);
+
+
+        ilUtil::sendSuccess($this->userLogin->getValue().$this->pl->txt("movedSuccessful").
+            $this->group_title.$this->pl->txt("movedTo").$this->destination_title);
 
     }
     protected function getGroupIdByTitle($group_title,$course_id){
         global $ilDB;
         $group_id= array();
 
-//        $query = "select oref.obj_id from
-//                  ilias.crs_items as citem
-//                  join ilias.object_reference oref
-//                  join ilias.object_data od on (oref.obj_id = od.obj_id and citem.obj_id = oref.ref_id)
-//                  where od.title= %s and citem.parent_id= %s and oref.deleted is null";
-
         $query = "select oref.obj_id from ilias.crs_items as citem
                   join ilias.object_reference as oref on oref.ref_id = citem.obj_id
-                  join ilias.object_data as od on oref.obj_id = od.obj_id
-                  where od.title='".$group_title."' and oref.deleted is null";
+                  join ilias.object_data as od on oref.obj_id = od.obj_id                  
+                  join ilias.crs_items as ci on oref.ref_id = ci.obj_id
+                  where od.title='".$group_title."' and ci.parent_id='".$_GET['ref_id']."' and oref.deleted is null";
         $result = $ilDB->queryF($query, array('text','integer'),array($group_title,$course_id));
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($group_id,$record);
@@ -306,7 +299,7 @@ class ilCourseImportMemberGUI {
 
     //Uberpruefung, ob User in der bisherigen Gruppe vorhanden
     protected function checkIfUserExistsInGroup($member_id, $group_id){
-        global $ilDB, $ilErr;
+        global $ilDB;
 
         $queryResult = array();
 
@@ -330,7 +323,7 @@ class ilCourseImportMemberGUI {
 
     //Uberpruefung, ob User in der neuen Gruppe schon vorhanden
     protected function checkIfUserNotExistsInGroup($member_id, $group_id){
-        global $ilDB, $ilErr;
+        global $ilDB;
 
         $queryResult = array();
 
@@ -358,7 +351,7 @@ class ilCourseImportMemberGUI {
 
     // Ueberpruefung, ob die Gruppe exisitiert
     protected function checkIfGroupExists($group_id){
-        global $ilDB, $ilErr;
+        global $ilDB;
 
         $queryResult = array();
 
@@ -388,7 +381,7 @@ class ilCourseImportMemberGUI {
         global $ilDB;
 
         $data = array();
-        $query = "select od.title
+        $query = "select od.title as 'title'
                     from ilias.object_data as od
                     join ilias.object_reference as oref on oref.obj_id = od.obj_id
                     join ilias.crs_items citem on citem.obj_id = oref.ref_id
@@ -397,7 +390,45 @@ class ilCourseImportMemberGUI {
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);
         }
-        return $data;
+
+        $output = array();
+
+        foreach ($data as $result){
+
+            array_push($output, $result['title']);
+
+        }
+
+        return $output;
+    }
+
+    protected  function getGroupsWhereMember(){
+
+        global $ilDB;
+
+        $data = array();
+        $query = "select od.title as 'title'
+                    from ilias.object_data as od
+                    join ilias.object_reference as oref on oref.obj_id = od.obj_id
+                    join ilias.crs_items citem on citem.obj_id = oref.ref_id
+                    join ilias.obj_members as om on om.obj_id = oref.obj_id
+                    join ilias.usr_data as ud on ud.usr_id = om.usr_id
+                    where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$_GET['ref_id'].
+                        "' and om.usr_id='".$this->userLogin->getValue()."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+
+        $output = array();
+
+        foreach ($data as $result){
+
+            array_push($output, $result['title']);
+
+        }
+
+        return $output;
 
     }
 
