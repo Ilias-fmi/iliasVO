@@ -279,7 +279,7 @@ class ilCourseImportGroupDisplayGUI
        // $query3 = "UPDATE ilias.object_members AS om
         //          JOIN ilias.usr_data AS ud ON ud.usr_id = om.usr_id  
         //
-        //           SET om.admin = 1
+        //           SET om.tutor = 1
         //           
         //           WHERE om.obj_id = '".$obj_id."' AND ud.     = '".$tutor."' ";
                  
