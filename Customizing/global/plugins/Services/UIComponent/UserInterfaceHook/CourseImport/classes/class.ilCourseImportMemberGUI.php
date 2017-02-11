@@ -263,7 +263,7 @@ class ilCourseImportMemberGUI {
 
 
         ilUtil::sendSuccess($this->userLogin->getValue().$this->pl->txt("movedSuccessful").
-            $this->group_title.$this->pl->txt("movedTo").$this->destination_title);
+            $this->group_title.$this->pl->txt("movedTo").$this->destination_title.$this->pl->txt("moved"));
 
     }
     protected function getGroupIdByTitle($group_title,$course_id){
