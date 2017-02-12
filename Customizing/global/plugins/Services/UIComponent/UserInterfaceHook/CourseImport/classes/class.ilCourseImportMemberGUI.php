@@ -14,6 +14,11 @@ define('IL_GRP_MEMBER',5);
  * @ilCtrl_Calls      ilCourseImportMemberGUI: ilObjCourseAdministrationGUI
  * @ilCtrl_Calls      ilCourseImportMemberGUI: ilRepositorySearchGUI
  * @ilCtrl_Calls      ilCourseImportMemberGUI: ilObjCourseGUI
+ * 
+ * This class implements the functionality of the tab move members. 
+ * Which includes the the move of the member itself but also the drop down menu,
+ * the auto completion and error messages for wrong input.
+ * 
  *
 
  */

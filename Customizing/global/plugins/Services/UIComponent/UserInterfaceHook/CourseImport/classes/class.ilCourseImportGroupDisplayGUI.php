@@ -13,6 +13,18 @@ require_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
  * @ilCtrl_Calls      ilCourseImportGroupDisplayGUI: ilObjCourseAdministrationGUI
  * @ilCtrl_Calls      ilCourseImportGroupDisplayGUI: ilRepositorySearchGUI
  * @ilCtrl_Calls      ilCourseImportGroupDisplayGUI: ilObjCourseGUI
+ * 
+ * 
+ * This class implements the functionality of the tab "Kurs bearbeiten" or "edit course"
+ * Which inlcludes the query to get the actual values of the following variables and the 
+ * update query for them too.
+ * $obj_id float
+ * $title string
+ * $description string
+ * $tutor string
+ * $members float Maximum Members
+ * $reg_start ilDateTime Start of Registration Period
+ * $reg_end ilDateTime Start of Registration Period
  */
 class ilCourseImportGroupDisplayGUI
 {
@@ -178,6 +190,8 @@ class ilCourseImportGroupDisplayGUI
             $textfield_tutor->setDataSource($ajax_url);
 
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members".$n);
+            
+            //$time_limit = new ilCheckboxInputGUI($this->pl->txt('grp_reg_limited'),'reg_limit_time'.$n);
             $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
             $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg'.$n);
             $dur->setStartText($this->pl->txt('cal_start'));
@@ -200,7 +214,16 @@ class ilCourseImportGroupDisplayGUI
             $form->addItem($textfield_tutor);
 
             $form->addItem($textfield_members);
-            $form->addItem($dur);
+          $form->addItem($dur);
+            
+           // $time_limit->addSubItem($dur);
+           // $form->addItem($time_limit);          Checkbox auskommentiert, da diese den weiteren Aufruf sabotiert
+                                        // "Call to undefined method ilCheckboxInputGUI::getStart()" muesste man fuer diese Loesung fixen
+                                        // Checkbox ist deswegen von nöten, weil wir in der Query reg_unlimeted auf 0 setzen müssen, dies aber jeweils nur
+          //fuer die gruppen die einen regstart/end brauchen, ansonsten macht er das für alle gruppen in diesem Kurs
+          // zudem gelang es meiner query bisher nicht in der datenbank etwas an dem Datum zu ändern. 
+          
+            
             $n=$n+1;
 
         }
@@ -224,6 +247,9 @@ class ilCourseImportGroupDisplayGUI
             $duration=$group[6];
             $reg_start=$duration->getStart();
             $reg_end=$duration->getEnd();
+            
+       
+            
             var_dump($ref_id);
             var_dump($title);
             var_dump($description);
@@ -252,14 +278,6 @@ class ilCourseImportGroupDisplayGUI
     protected function updateGroup($obj_id, $title, $description, $tutor, $members, $reg_start, $reg_end){
         
         global $ilDB;
-
-  //     $query = "UPDATE grp_settings ".
-  //		"SET information = ".$description.", ".
-  //		"registration_start = ".$reg_start.", ".
-  //		"registration_end = ".$reg_end.", ".
-  //		"WHERE obj_id = ".$obj_id;
-     
-  
         
         
         $query1 = "UPDATE ilias.object_data as od
@@ -268,35 +286,45 @@ class ilCourseImportGroupDisplayGUI
                              
                 WHERE od.obj_id = '".$obj_id."'";
         
-      //  $query2 = "UPDATE ilias.grp_settings as gs
+       $query2 = "UPDATE ilias.grp_settings as gs
         
-       //            SET gs.registration_start = '".$reg_start."' , gs.registration_end = '"$reg_end"' , gs.registration_max_members ='".$members."'
+                   SET gs.registration_max_members ='".$members."'
         
-         //          WHERE gs.obj_id = '".$obj_id."'
+                 WHERE gs.obj_id = '".$obj_id."'";
         
-       // ";
+       
+            
+       $query3 = "UPDATE ilias.grp_settings as gs
+       
+                  SET gs.registration_start = '".$reg_start."'   
+             
+               WHERE gs.obj_id = '".$obj_id."'";
+       
+       $query4 = "UPDATE ilias.grp_settings as gs 
+               SET gs.registration_end = '".$reg_end."' 
+              WHERE gs.obj_id = '".$obj_id."'" ;
+
+     //  $query5 = "UPDATE ilias.grp_settings as gs 
+     //          SET gs.registration_unlimited =  0
+     //          WHERE gs.obj_id = '".$obj_id."'" ;  
+       
+         $query6 = "UPDATE ilias.obj_members om
+                  JOIN ilias.usr_data ud ON  om.usr_id = ud.usr_id  
         
-       // $query3 = "UPDATE ilias.object_members AS om
-        //          JOIN ilias.usr_data AS ud ON ud.usr_id = om.usr_id  
-        //
-        //           SET om.admin = 1
-        //           
-        //           WHERE om.obj_id = '".$obj_id."' AND ud.     = '".$tutor."' ";
+                   SET om.admin = 0
+                   
+                   WHERE om.obj_id = '".$obj_id."' AND ud.login = '".$tutor."' ";
                  
             $ilDB->manipulate($query1);
             $ilDB->manipulate($query2);
-         // $ilDB->manipulate($query3);
-         
+            $ilDB->manipulate($query3);
+            $ilDB->manipulate($query4);
+          //  $ilDB->manipulate($query5);
+            $ilDB->manipulate($query6);  
         
     }
 
-        //JOIN ilias.object_reference as oref ON oref.obj_id = od.obj_id 
-       // JOIN ilias.grp_settings gs ON gs.obj_id = oref.obj_id
-              // JOIN ilias.crs_items citem ON citem.obj_id = oref.ref_id
-                //LEFT JOIN (select * from ilias.obj_members om where om.admin = 1) as obm ON obm.obj_id = oref.obj_id
-                //LEFT JOIN ilias.usr_data ud ON ud.usr_id = obm.usr_id    
-
-
+      
     protected function getTableData($ref_id){
 
         global $ilDB;

@@ -22,8 +22,8 @@ require_once './Modules/Folder/classes/class.ilObjFolder.php';
  * 
  *  This class implements the functionality of the "groupcreator tab" which are
  *  the number of groups (checks the db and numbers the group consecutively), 
- *  maximum members, how to join the group (password ord not) and from/till which
- *  date.   
+ *  maximum members, how to join the group (password ord not), from/till which
+ *  date and if you want a folder with a unique name in every created group.   
  *  
  */
 class ilCourseImportGroupGUI
