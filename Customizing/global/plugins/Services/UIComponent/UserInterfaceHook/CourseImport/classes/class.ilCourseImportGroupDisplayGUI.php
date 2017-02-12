@@ -311,7 +311,7 @@ class ilCourseImportGroupDisplayGUI
          $query6 = "UPDATE ilias.obj_members om
                   JOIN ilias.usr_data ud ON  om.usr_id = ud.usr_id  
         
-                   SET om.admin = 0
+                   SET om.admin = 1  
                    
                    WHERE om.obj_id = '".$obj_id."' AND ud.login = '".$tutor."' ";
                  
