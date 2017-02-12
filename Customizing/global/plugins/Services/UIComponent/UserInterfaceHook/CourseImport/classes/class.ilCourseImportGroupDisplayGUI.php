@@ -61,6 +61,8 @@ class ilCourseImportGroupDisplayGUI
 
     protected $form;
 
+    protected $group_admins;
+
     public function __construct()
     {
         global $tree, $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
@@ -70,6 +72,7 @@ class ilCourseImportGroupDisplayGUI
         $this->ctrl = $ilCtrl;
         $this->tpl = $tpl;
         $this->ilLocator = $ilLocator;
+        $this->group_admins = array();
         $this->pl = ilCourseImportPlugin::getInstance();
     }
 
@@ -138,25 +141,6 @@ class ilCourseImportGroupDisplayGUI
     protected function view()
     {
         $this->form =$this->initForm();
-        $items = $this->form->getItems();
-
-
-        //Ausgabe zu Testzwecken, richtige Funktion in saveGroups(); !!!!!
-        $group_items = array_chunk($items,7);
-        foreach ($group_items as $group){
-
-            $ref_id = $group[1]->getValue();
-            $title = $group[2]->getValue();
-            $description =$group[3]->getValue();
-            $tutor=$group[4]->getValue();
-            $members=$group[5]->getValue();
-            $duration=$group[6];
-            var_dump($ref_id);
-            var_dump($title);
-            var_dump($description);
-            var_dump($tutor);
-            var_dump($members);
-        }
         $this->tpl->setContent($this->form->getHTML());
 
     }
@@ -166,7 +150,7 @@ class ilCourseImportGroupDisplayGUI
      */
     protected function initForm()
         {
-            global $lng, $ilCtrl;
+            global $ilCtrl;
 
             $form = new ilPropertyFormGUI();
             $form->setTitle($this->pl->txt('course_edit'));
@@ -205,6 +189,7 @@ class ilCourseImportGroupDisplayGUI
             $textfield_members->setValue($row['registration_max_members']);
             $start_time = new ilDateTime($row['registration_start'],IL_CAL_DATETIME);
             $end_time = new ilDateTime($row['registration_end'],IL_CAL_DATETIME);
+            $this->group_admins[$row['obj_id']]=$row['login'];
             $dur->setStart($start_time);
             $dur->setEnd($end_time);
             $form->addItem($ref_id_field);
@@ -247,9 +232,6 @@ class ilCourseImportGroupDisplayGUI
             $duration=$group[6];
             $reg_start=$duration->getStart();
             $reg_end=$duration->getEnd();
-            
-       
-            
             var_dump($ref_id);
             var_dump($title);
             var_dump($description);
@@ -265,6 +247,34 @@ class ilCourseImportGroupDisplayGUI
 
 
     }
+    protected function getUserId($user_login){
+        global $ilDB;
+        $data = array();
+        $query = "select ud.usr_id 
+        from ilias.usr_data as ud
+        where ud.login = '".$user_login."'";
+        $res = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($res)){
+            array_push($data,$record);
+        }
+
+        return $data[0];
+
+    }
+
+    protected function getAdminRoleId($obj_id){
+
+        $description = "Groupadmin group obj_no." . $obj_id;
+        global $ilDB;
+        $role_id = array();
+        $query = "SELECT od.obj_id FROM ilias.object_data as od WHERE od.description = '".$description."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($role_id,$record);
+        }
+        return $role_id[0];
+    }
+
 
     /**
      * @param $obj_id float
@@ -278,6 +288,50 @@ class ilCourseImportGroupDisplayGUI
     protected function updateGroup($obj_id, $title, $description, $tutor, $members, $reg_start, $reg_end){
         
         global $ilDB;
+
+
+        //MANIPULATE GROUP ADMIN needs to be checked
+//        //Update Group Admins if necessary
+//        if($this->group_admins[$obj_id]!=$tutor){
+//
+//            $user_id = $this->getUserId($tutor);
+//            $user_id = $user_id['usr_id'];
+//
+//            $role_id = $this->getAdminRoleId($obj_id);
+//            $role_id = $role_id['obj_id'];
+//
+//            var_dump($user_id);
+//            var_dump($role_id);
+//
+//            //insert new Admin in RBAC
+//            $query = "INSERT INTO rbac_ua (usr_id, rol_id) ".
+//                "VALUES (".$user_id.",".$role_id.")";
+//            $ilDB->manipulate($query);
+//
+//            if(!empty($this->group_admins[$obj_id])){
+//                $user_id_old = $this->getUserId($this->group_admins[$obj_id]);
+//                $user_id_old = $user_id_old['usr_id'];
+//
+//                //delete OLD from RBAC
+//                $query = "DELETE FROM rbac_ua
+//                WHERE usr_id = ".$user_id_old."
+//                AND rol_id = ".$role_id." ";
+//                $ilDB->manipulate($query);
+//
+//
+//                //Update Obj_members
+//                $query = "UPDATE ilias.obj_members as om
+//                SET  om.usr_id = '".$user_id."' WHERE
+//                om.obj_id = '".$obj_id."' AND om.admin = 1 AND om.usr_id = '".$user_id_old."'";
+//                $ilDB->manipulate($query);
+//
+//            }else{
+//                $query = "INSERT INTO obj_members (obj_id,usr_id,blocked,notification,passed,origin,origin_ts,contact,admin,tutor,member)".
+//                    "VALUES (".$obj_id.",".$user_id.",0,0,NULL,0,0,0,1,0,0)";
+//                $ilDB->manipulate($query);
+//            }
+//
+//        }
         
         
         $query1 = "UPDATE ilias.object_data as od
