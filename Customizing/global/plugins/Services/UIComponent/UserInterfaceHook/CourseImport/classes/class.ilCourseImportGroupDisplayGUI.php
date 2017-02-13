@@ -163,6 +163,7 @@ class ilCourseImportGroupDisplayGUI
                 'doUserAutoComplete', '', true,false);
             $n = 1;
 
+
         foreach ($data as $row){
             $section = new ilFormSectionHeaderGUI();
             $section->setTitle($row['title']);
@@ -175,7 +176,7 @@ class ilCourseImportGroupDisplayGUI
 
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members".$n);
             
-            //$time_limit = new ilCheckboxInputGUI($this->pl->txt('grp_reg_limited'),'reg_limit_time'.$n);
+            $time_limit = new ilCheckboxInputGUI($this->pl->txt('grp_reg_limited'),'reg_limit_time'.$n);
             $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
             $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg'.$n);
             $dur->setStartText($this->pl->txt('cal_start'));
@@ -187,6 +188,8 @@ class ilCourseImportGroupDisplayGUI
             $textfield_description->setValue($row['description']);
             $textfield_tutor->setValue($row['login']);
             $textfield_members->setValue($row['registration_max_members']);
+            $time_limit->setChecked(!$row['registration_unlimited']);
+            var_dump(!$row['registration_unlimited']);
             $start_time = new ilDateTime($row['registration_start'],IL_CAL_DATETIME);
             $end_time = new ilDateTime($row['registration_end'],IL_CAL_DATETIME);
             $this->group_admins[$row['obj_id']]=$row['login'];
@@ -198,16 +201,11 @@ class ilCourseImportGroupDisplayGUI
 
             $form->addItem($textfield_tutor);
 
+            $time_limit->addSubItem($dur);
             $form->addItem($textfield_members);
-          $form->addItem($dur);
-            
-           // $time_limit->addSubItem($dur);
-           // $form->addItem($time_limit);          Checkbox auskommentiert, da diese den weiteren Aufruf sabotiert
-                                        // "Call to undefined method ilCheckboxInputGUI::getStart()" muesste man fuer diese Loesung fixen
-                                        // Checkbox ist deswegen von nöten, weil wir in der Query reg_unlimeted auf 0 setzen müssen, dies aber jeweils nur
-          //fuer die gruppen die einen regstart/end brauchen, ansonsten macht er das für alle gruppen in diesem Kurs
-          // zudem gelang es meiner query bisher nicht in der datenbank etwas an dem Datum zu ändern. 
-          
+            $form->addItem($time_limit);
+
+
             
             $n=$n+1;
 
@@ -222,6 +220,7 @@ class ilCourseImportGroupDisplayGUI
         $this->form->setValuesByPost();
         $items = $this->form->getItems();
         $group_items = array_chunk($items,7);
+        $n=1;
         foreach ($group_items as $group){
 
             $ref_id = $group[1]->getHiddenTitle();
@@ -230,19 +229,21 @@ class ilCourseImportGroupDisplayGUI
             $tutor=$group[4]->getValue();
             $members=$group[5]->getValue();
             $duration=$group[6];
-            $reg_start=$duration->getStart();
-            $reg_end=$duration->getEnd();
-            var_dump($ref_id);
-            var_dump($title);
-            var_dump($description);
-            var_dump($tutor);
-            var_dump($members);
+            $time_reg_enabled = $duration->getChecked();
+            $reg_start=$this->loadDate('reg'.$n,'start');
+            $reg_end = $this->loadDate('reg'.$n,'end');
+            $reg_start = $reg_start->get(IL_CAL_DATETIME);
+            $reg_end = $reg_end->get(IL_CAL_DATETIME);
 
 
-            $this->updateGroup($ref_id,$title,$description,$tutor,$members,$reg_start,$reg_end);
+
+
+            $this->updateGroup($ref_id,$title,$description,$tutor,$members,$reg_start,$reg_end,$time_reg_enabled);
+            $n=$n+1;
         }
 
 
+        $this->form = $this->initForm();
         $this->tpl->setContent($this->form->getHTML());
 
 
@@ -275,6 +276,41 @@ class ilCourseImportGroupDisplayGUI
         return $role_id[0];
     }
 
+    protected function getCourseAdminIDs($ref_id){
+        global $ilDB;
+        $ids = array();
+        $data = array();
+        $query = "select om.usr_id from ilias.obj_members as om
+join ilias.object_reference as oref on oref.obj_id = om.obj_id
+where om.admin = 1 and oref.ref_id = '".$ref_id."'";
+
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        foreach ($data as $row){
+            array_push($ids,$row['usr_id']);
+        }
+        return $ids;
+
+    }
+    protected function loadDate($a_comp,$a_field)
+    {
+        global $ilUser;
+
+        include_once('./Services/Calendar/classes/class.ilDateTime.php');
+
+        $dt['year'] = (int) $_POST[$a_comp][$a_field]['date']['y'];
+        $dt['mon'] = (int) $_POST[$a_comp][$a_field]['date']['m'];
+        $dt['mday'] = (int) $_POST[$a_comp][$a_field]['date']['d'];
+        $dt['hours'] = (int) $_POST[$a_comp][$a_field]['time']['h'];
+        $dt['minutes'] = (int) $_POST[$a_comp][$a_field]['time']['m'];
+        $dt['seconds'] = (int) $_POST[$a_comp][$a_field]['time']['s'];
+
+        $date = new ilDateTime($dt,IL_CAL_FKT_GETDATE,$ilUser->getTimeZone());
+        return $date;
+    }
+
 
     /**
      * @param $obj_id float
@@ -285,54 +321,55 @@ class ilCourseImportGroupDisplayGUI
      * @param $reg_start ilDateTime Start of Registration Period
      * @param $reg_end ilDateTime Start of Registration Period
      */
-    protected function updateGroup($obj_id, $title, $description, $tutor, $members, $reg_start, $reg_end){
+    protected function updateGroup($obj_id, $title, $description, $tutor, $members, $reg_start, $reg_end, $time_reg){
         
-        global $ilDB;
+        global $ilDB,$rbacadmin;
 
 
         //MANIPULATE GROUP ADMIN needs to be checked
-//        //Update Group Admins if necessary
-//        if($this->group_admins[$obj_id]!=$tutor){
-//
-//            $user_id = $this->getUserId($tutor);
-//            $user_id = $user_id['usr_id'];
-//
-//            $role_id = $this->getAdminRoleId($obj_id);
-//            $role_id = $role_id['obj_id'];
-//
-//            var_dump($user_id);
-//            var_dump($role_id);
-//
-//            //insert new Admin in RBAC
-//            $query = "INSERT INTO rbac_ua (usr_id, rol_id) ".
-//                "VALUES (".$user_id.",".$role_id.")";
-//            $ilDB->manipulate($query);
-//
-//            if(!empty($this->group_admins[$obj_id])){
-//                $user_id_old = $this->getUserId($this->group_admins[$obj_id]);
-//                $user_id_old = $user_id_old['usr_id'];
-//
-//                //delete OLD from RBAC
-//                $query = "DELETE FROM rbac_ua
-//                WHERE usr_id = ".$user_id_old."
-//                AND rol_id = ".$role_id." ";
+        //Update Group Admins if necessary
+        if($this->group_admins[$obj_id]!=$tutor){
+
+            $user_id = $this->getUserId($tutor);
+            $user_id = $user_id['usr_id'];
+
+            $role_id = $this->getAdminRoleId($obj_id);
+            $role_id = $role_id['obj_id'];
+
+
+            $course_admins = $this->getCourseAdminIDs($_GET['ref_id']);
+
+
+            $rbacadmin->assignUser($role_id,$user_id);
+
+            if((!empty($this->group_admins[$obj_id]))){
+                $user_id_old = $this->getUserId($this->group_admins[$obj_id]);
+                $user_id_old = $user_id_old['usr_id'];
+
+                if(!in_array($user_id_old,$course_admins)){
+
+                    $rbacadmin->deassignUser($role_id,$user_id_old);
+
+                     //Update Obj_members
+//                    $query = "UPDATE ilias.obj_members as om
+//                    SET  om.usr_id = '".$user_id."' WHERE
+//                    om.obj_id = '".$obj_id."' AND om.admin = 1 AND om.usr_id = '".$user_id_old."'";
+//                    $ilDB->manipulate($query);
+                    }else{
+//                    $query = "INSERT INTO ilias.obj_members (obj_id,usr_id,blocked,notification,passed,origin,origin_ts,contact,admin,tutor,member)
+//                    VALUES (".$obj_id.",".$user_id.",0,0,NULL,0,0,0,1,0,0)";
+//                    $ilDB->manipulate($query);
+                }
+
+
+            }else{
+//                $query = "INSERT INTO ilias.obj_members (obj_id,usr_id,blocked,notification,passed,origin,origin_ts,contact,admin,tutor,member)
+//                VALUES (".$obj_id.",".$user_id.",0,0,NULL,0,0,0,1,0,0)";
 //                $ilDB->manipulate($query);
-//
-//
-//                //Update Obj_members
-//                $query = "UPDATE ilias.obj_members as om
-//                SET  om.usr_id = '".$user_id."' WHERE
-//                om.obj_id = '".$obj_id."' AND om.admin = 1 AND om.usr_id = '".$user_id_old."'";
-//                $ilDB->manipulate($query);
-//
-//            }else{
-//                $query = "INSERT INTO obj_members (obj_id,usr_id,blocked,notification,passed,origin,origin_ts,contact,admin,tutor,member)".
-//                    "VALUES (".$obj_id.",".$user_id.",0,0,NULL,0,0,0,1,0,0)";
-//                $ilDB->manipulate($query);
-//            }
-//
-//        }
-        
+
+            }
+        }
+
         
         $query1 = "UPDATE ilias.object_data as od
                            
@@ -347,35 +384,27 @@ class ilCourseImportGroupDisplayGUI
                  WHERE gs.obj_id = '".$obj_id."'";
         
        
-            
+
+
+       if($time_reg=="1") {
        $query3 = "UPDATE ilias.grp_settings as gs
-       
-                  SET gs.registration_start = '".$reg_start."'   
-             
+
+                  SET gs.registration_start = '".$reg_start."', gs.registration_unlimited = 0
+
                WHERE gs.obj_id = '".$obj_id."'";
-       
-       $query4 = "UPDATE ilias.grp_settings as gs 
-               SET gs.registration_end = '".$reg_end."' 
+
+       $query4 = "UPDATE ilias.grp_settings as gs
+               SET gs.registration_end = '".$reg_end."'
               WHERE gs.obj_id = '".$obj_id."'" ;
 
-     //  $query5 = "UPDATE ilias.grp_settings as gs 
-     //          SET gs.registration_unlimited =  0
-     //          WHERE gs.obj_id = '".$obj_id."'" ;  
-       
-         $query6 = "UPDATE ilias.obj_members om
-                  JOIN ilias.usr_data ud ON  om.usr_id = ud.usr_id  
-        
-                   SET om.admin = 1  
-                   
-                   WHERE om.obj_id = '".$obj_id."' AND ud.login = '".$tutor."' ";
-                 
-            $ilDB->manipulate($query1);
-            $ilDB->manipulate($query2);
             $ilDB->manipulate($query3);
             $ilDB->manipulate($query4);
-          //  $ilDB->manipulate($query5);
-            $ilDB->manipulate($query6);  
-        
+       }
+
+
+            $ilDB->manipulate($query1);
+            $ilDB->manipulate($query2);
+
     }
 
       
@@ -384,7 +413,7 @@ class ilCourseImportGroupDisplayGUI
         global $ilDB;
 
         $data = array();
-        $query = "select od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end, od.obj_id
+        $query = "select od.title, gs.registration_max_members, ud.login, od.description, gs.registration_start, gs.registration_end, od.obj_id, gs.registration_unlimited
                     from ilias.object_data as od
                     join ilias.object_reference as oref on oref.obj_id = od.obj_id 
                     join ilias.grp_settings gs on gs.obj_id = oref.obj_id

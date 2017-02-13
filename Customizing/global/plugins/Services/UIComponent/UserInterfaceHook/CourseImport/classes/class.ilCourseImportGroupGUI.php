@@ -230,9 +230,9 @@ class ilCourseImportGroupGUI
     protected function createGroups()
     {
         
-        global $ilDB;
+        global $ilDB, $ilUser, $rbacadmin;
         
-         
+        $userID = $ilUser->getId();
         $form = $this->initForm();
         $form->setValuesByPost();
         $reg_start = $this->loadDate('start');
@@ -308,6 +308,14 @@ class ilCourseImportGroupGUI
                 $group->createReference();
                 $group->putInTree($_GET['ref_id']);
                 $group->setPermissions($_GET['ref_id']);
+                $admin_role = $group->getDefaultAdminRole();
+                $rbacadmin->assignUser($admin_role,$userID);
+
+                $query = "UPDATE ilias.obj_members as om
+                    SET  om.contact = 1, om.notification = 1
+                    WHERE om.obj_id = '".$group->getId()."' AND om.usr_id = '".$userID."' ";
+                 $ilDB->manipulate($query);
+
 
                 var_dump($folder_check);
                 if ($_POST['group_folder_name_checkbox']){
