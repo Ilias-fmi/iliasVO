@@ -74,6 +74,7 @@ class ilCourseImportGroupGUI
     protected $group_folder_name;
     protected $group_folder_name_checkbox;
     
+      
 
 
     public function __construct() {
@@ -205,6 +206,7 @@ class ilCourseImportGroupGUI
 
         $form->addCommandButton('createGroups', $this->pl->txt('create_groups'));
         
+               
         
         return $form;
     }
@@ -225,6 +227,28 @@ class ilCourseImportGroupGUI
         $date = new ilDateTime($dt,IL_CAL_FKT_GETDATE,$ilUser->getTimeZone());
         return $date;
     }
+    
+    protected function countGroups($parent_id){
+        
+        global $ilDB;
+        
+        $group_number = array();
+        
+         $query = "select od.title as 'Übungsruppe'
+                  from ilias.object_data od
+                  join ilias.object_reference obr on od.obj_id = obr.obj_id
+                  join ilias.crs_items crsi on obr.ref_id = crsi.obj_id
+                  where (od.type = 'grp') and (obr.deleted is null) and (crsi.parent_id = '".$parent_id."') ";
+        
+           $results = $ilDB->query($query);
+            while ($record = $ilDB->fetchAssoc($results)){
+                   array_push($group_number,$record);
+            }
+        $result = count($group_number);
+        
+        return $result;
+         
+    }
 
 
     protected function createGroups()
@@ -237,7 +261,6 @@ class ilCourseImportGroupGUI
         $form->setValuesByPost();
         $reg_start = $this->loadDate('start');
         $reg_end = $this->loadDate('end');
-        $group_number = array();
         $created = false;
         $prefix = $this->group_name->getValue();
         $number = $this->group_count->getValue();
@@ -260,18 +283,11 @@ class ilCourseImportGroupGUI
         $folder_check = $this->group_folder_name_checkbox->getValue();
         $folder_title = $this->group_folder_name->getValue();
 
-        $query = "select od.title as 'Übungsruppe'
-                  from ilias.object_data od
-                  join ilias.object_reference obr on od.obj_id = obr.obj_id
-                  join ilias.crs_items crsi on obr.ref_id = crsi.obj_id
-                  where (od.type = 'grp') and (obr.deleted is null) and (crsi.parent_id = '".$_GET['ref_id']."') ";
-
-        $results = $ilDB->query($query);
-            while ($record = $ilDB->fetchAssoc($results)){
-                   array_push($group_number,$record);
-            }
-        $result = count($group_number);
        
+        $parent_id = $_GET['ref_id']; 
+        
+       $result = $this->countGroups($parent_id);
+        
         $nn = 1;
         
         if ($result > 0){
@@ -336,6 +352,8 @@ class ilCourseImportGroupGUI
                 ilUtil::sendSuccess(sprintf($this->pl->txt(self::CREATION_SUCCEEDED), $this->courses['created'], $this->courses['updated'], $this->courses['refs'], $this->courses['refs_del']));
                 $form = $this->initForm();
                 $this->tpl->setContent($form->getHTML());
+                
+             
             }else {
                 ilUtil::sendFailure($this->pl->txt(self::CREATION_FAILED), true);
                 $this->tpl->setContent($form->getHTML());
