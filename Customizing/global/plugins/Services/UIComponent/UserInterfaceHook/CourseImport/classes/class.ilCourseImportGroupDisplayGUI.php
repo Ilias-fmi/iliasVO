@@ -4,6 +4,7 @@ require_once 'class.ilCourseImportGroupTable.php';
 require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
 require_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
 
+
 /**
  * Created by PhpStorm.
  * User: Manuel
@@ -216,6 +217,7 @@ class ilCourseImportGroupDisplayGUI
 
     protected function saveGroups(){
 
+             
         $this->form = $this->initForm();
         $this->form->setValuesByPost();
         $items = $this->form->getItems();
@@ -235,8 +237,16 @@ class ilCourseImportGroupDisplayGUI
             $reg_start = $reg_start->get(IL_CAL_DATETIME);
             $reg_end = $reg_end->get(IL_CAL_DATETIME);
 
+            
+       
 
-
+            
+            //if reg_end before reg_start, we set the reg_start on the reg_end
+            //maybe not the best solution 
+            if($reg_end<$reg_start){
+                
+                $reg_end = $reg_start;
+            }
 
             $this->updateGroup($ref_id,$title,$description,$tutor,$members,$reg_start,$reg_end,$time_reg_enabled);
             $n=$n+1;
