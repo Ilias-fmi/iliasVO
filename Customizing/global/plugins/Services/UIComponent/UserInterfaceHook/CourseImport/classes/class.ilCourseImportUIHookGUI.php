@@ -49,8 +49,11 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
         // Tab in einer Uebung
         if (($_GET["baseClass"] == 'ilExerciseHandlerGUI' || $_GET["baseClass"] == 'ilexercisehandlergui') && $a_part == 'tabs'){
             $this->ctrl->setParameterByClass('ilcourseimportlinkgui', 'ref_id', $_GET['ref_id']);
+            $this->ctrl->setParameterByClass('ilcourseimporttutorgui','ref_id',$_GET['ref_id']);
             $link2 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportLinkGUI'));
+            $link3 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI','ilCourseImportTutorGUI'));
             $tabs->addTab('link', $this->pl->txt('tab_link'), $link2);
+            $tabs->addTab('tutor',$this->pl->txt('tab_tutor'),$link3);
         }
 
         //Tab in Administration -> Kurs
