@@ -1,9 +1,10 @@
 <?php
-include_once './Modules/Exercise/classes/class.ilExerciseMemberTableGUI.php';
+include_once 'class.ilCourseImportExerciseMemberTableGUI.php';
 include_once './Modules/Exercise/classes/class.ilExerciseManagementGUI.php';
 include_once "Modules/Exercise/classes/class.ilExSubmission.php";
 include_once "Modules/Exercise/classes/class.ilExSubmissionBaseGUI.php";
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
+include_once("./Services/Form/classes/class.ilSelectInputGUI.php");
 
 /**
  * Created by PhpStorm.
@@ -30,6 +31,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
     protected $exercise;
     protected $assignment;
     protected $group;
+    protected $si;
 
     /**
      * ilCourseImportTutorGUI constructor.
@@ -39,7 +41,9 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         global $tree, $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
         $this->tree = $tree;
         $this->lng = $lng;
-
+        require_once "./Modules/Exercise/classes/class.ilObjExerciseGUI.php";
+        $ex_gui =& new ilObjExerciseGUI("", (int) $_GET["ref_id"], true, false);
+        $this->exercise=$ex_gui->object;
         $this->tabs = $ilTabs;
         $this->ctrl = $ilCtrl;
         $ilCtrl->saveParameter($this, array("vw", "member_id"));
@@ -178,6 +182,14 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         return $output;
     }
 
+    protected function selectGroupObject(){
+
+
+        $this->group = ilUtil::stripSlashes($_POST["grp_id"]);
+        var_dump($this->group);
+        $this->membersObject();
+    }
+
     public function membersObject(){
         global $tpl, $ilCtrl,$ilToolbar, $lng;
 
@@ -189,13 +201,15 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
         include_once 'Services/Tracking/classes/class.ilLPMarks.php';
 
-        include_once("./Services/Form/classes/class.ilSelectInputGUI.php");
-        $si = new ilSelectInputGUI($this->lng->txt(""), "ass_id");
-        $si->setOptions($group_options);
+
+        $this->si = new ilSelectInputGUI($this->lng->txt(""), "grp_id");
+        $this->si->setOptions($group_options);
         if (!empty($this->group)) {
-            $si->setValue($this->group);
+            $this->si->setValue($this->group);
         }
-        $ilToolbar->addStickyItem($si);
+        $ilToolbar->addStickyItem($this->si);
+
+        var_dump($this->si->getOptions());
 
         include_once("./Services/UIComponent/Button/classes/class.ilSubmitButton.php");
         $button = ilSubmitButton::getInstance();
@@ -267,7 +281,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
             $this->ctrl->setParameter($this, "vw", self::VIEW_ASSIGNMENT);
 
             include_once("./Modules/Exercise/classes/class.ilExerciseMemberTableGUI.php");
-            $exc_tab = new ilExerciseMemberTableGUI($this, "members", $this->exercise, $this->assignment);
+            $exc_tab = new ilCourseImportExerciseMemberTableGUI($this, "members", $this->exercise, $this->assignment, $this->group);
             $tpl->setContent($exc_tab->getHTML());
         }
         else
