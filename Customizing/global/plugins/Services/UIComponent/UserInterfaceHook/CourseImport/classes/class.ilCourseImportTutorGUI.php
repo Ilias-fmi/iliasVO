@@ -30,6 +30,8 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
     protected $pl;
     protected $exercise;
     protected $assignment;
+    protected $assignment_list;
+    protected $selected_assignment;
     protected $group;
     protected $si;
 
@@ -84,6 +86,14 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
      */
     public function executeCommand() {
         $this->checkAccess();
+
+        $ass = ilExAssignment::getInstancesByExercise($this->exercise->getId());
+
+        foreach ($ass as $as){
+            if ($as->getID()== $this->selected_assignment){
+                $this->assignment = $as;
+            }
+        }
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
         $this->prepareOutput();
@@ -182,14 +192,6 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         return $output;
     }
 
-    protected function selectGroupObject(){
-
-
-        $this->group = ilUtil::stripSlashes($_POST["grp_id"]);
-        var_dump($this->group);
-        $this->membersObject();
-    }
-
     public function membersObject(){
         global $tpl, $ilCtrl,$ilToolbar, $lng;
 
@@ -206,30 +208,23 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         $this->si->setOptions($group_options);
         if (!empty($this->group)) {
             $this->si->setValue($this->group);
+        }else{
+            $this->si->setValue(reset($group_options));
+            $this->group = reset($group_options);
         }
         $ilToolbar->addStickyItem($this->si);
-
-        var_dump($this->si->getOptions());
-
-        include_once("./Services/UIComponent/Button/classes/class.ilSubmitButton.php");
-        $button = ilSubmitButton::getInstance();
-        $button->setCaption("exc_select_grp");
-        $button->setCommand("selectGroup");
-        $ilToolbar->addStickyItem($button);
-
-        $ilToolbar->addSeparator();
 
         // assignment selection
         include_once("./Modules/Exercise/classes/class.ilExAssignment.php");
         $ass = ilExAssignment::getInstancesByExercise($this->exercise->getId());
+        $this->assignment_list = $ass;
 
 
         if (!$this->assignment)
         {
-            $this->assignment = current($ass);
+            $this->assignment = reset($ass);
         }
 
-        reset($ass);
         if (count($ass) > 1)
         {
             $options = array();
@@ -245,7 +240,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
             include_once("./Services/UIComponent/Button/classes/class.ilSubmitButton.php");
             $button = ilSubmitButton::getInstance();
-            $button->setCaption("exc_select_ass");
+            $button->setCaption("exc_select_ass_grp");
             $button->setCommand("selectAssignment");
             $ilToolbar->addStickyItem($button);
 
@@ -294,15 +289,82 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         //$this->tpl->setContent($ilToolbar->getHTML());
         return;
     }
-    protected function selectAssignment(){
+
+    protected function saveStatus(array $a_data)
+    {
+        global $ilCtrl;
+
+        include_once("./Modules/Exercise/classes/class.ilExAssignment.php");
+
+        $saved_for = array();
+
+        $this->getSelectedAssignment();
+        foreach($a_data as $ass_id => $users)
+        {
+            $ass = ($ass_id < 0)
+                ? $this->getSelectedAssignment()
+                : new ilExAssignment($ass_id);
+
+            foreach($users as $user_id => $values)
+            {
+                // this will add team members if available
+                $submission = new ilExSubmission($ass, $user_id);
+                foreach($submission->getUserIds() as $sub_user_id)
+                {
+                    $uname = ilObjUser::_lookupName($sub_user_id);
+                    $saved_for[$sub_user_id] = $uname["lastname"].", ".$uname["firstname"];
+
+                    $member_status = $ass->getMemberStatus($sub_user_id);
+                    $member_status->setStatus($values["status"]);
+                    $member_status->setNotice($values["notice"]);
+                    $member_status->setMark($values["mark"]);
+                    $member_status->update();
+                }
+            }
+        }
+
+        if (count($saved_for) > 0)
+        {
+            $save_for_str = "(".implode($saved_for, " - ").")";
+        }
+
+        ilUtil::sendSuccess($this->lng->txt("exc_status_saved")." ".$save_for_str, true);
+        //$ilCtrl->redirect($this, $this->getViewBack());
+    }
+
+    protected function getSelectedAssignment(){
+        $assignment_list =  ilExAssignment::getInstancesByExercise($this->exercise->getId());
+        $selected_assignment = ilUtil::stripSlashes($_POST["ass_id"]);
+        var_dump($assignment_list);
+        var_dump($selected_assignment);
+        foreach ($assignment_list as $as){
+            if ($as->getID()== $selected_assignment){
+                $this->assignment = $as;
+                return $as;
+            }
+        }
+    }
+
+
+
+    public function selectAssignmentObject(){
 
             global $ilTabs;
 
-            var_dump($_GET["ass_id"]);
-            $_GET["ass_id"] = ilUtil::stripSlashes($_POST["ass_id"]);
-            var_dump($_GET["ass_id"]);
+        $this->group = ilUtil::stripSlashes($_POST["grp_id"]);
 
-            $this->members();
+        $_GET["ass_id"] = ilUtil::stripSlashes($_POST["ass_id"]);
+        $this->selected_assignment = ilUtil::stripSlashes($_POST["ass_id"]);
+
+        $ass = ilExAssignment::getInstancesByExercise($this->exercise->getId());
+
+        foreach ($ass as $as){
+          if ($as->getID()== $this->selected_assignment){
+               $this->assignment = $as;
+          }
+          }
+
+            $this->membersObject();
 
     }
 
