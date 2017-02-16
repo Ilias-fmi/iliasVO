@@ -21,6 +21,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
     const VIEW_PARTICIPANT = 2;
     const VIEW_GRADES = 3;
 
+    public $assign = array();
     protected $tree;
     protected $lng;
     protected $tabs;
@@ -28,12 +29,11 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
     protected $tpl;
     protected $ctrl;
     protected $pl;
-    protected $exercise;
-    protected $assignment;
     protected $assignment_list;
     protected $selected_assignment;
     protected $group;
     protected $si;
+    protected $selInputAss;
 
     /**
      * ilCourseImportTutorGUI constructor.
@@ -56,7 +56,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
     protected function prepareOutput() {
 
-        global $ilLocator, $tpl;
+        global $ilLocator, $tpl,$lng,$ilCtrl;
 
 
         $this->ctrl->setParameterByClass('ilobjexercisegui', 'ref_id', $_GET['ref_id']);
@@ -65,10 +65,8 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
         $this->ctrl->getRedirectSource();
 
-        $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
-            'ilobjexercisegui',
-            'ilobjexercisegui',
-        )));
+        $this->tabs->setBackTarget($this->pl->txt('back'), $lng->txt("back"),
+            $ilCtrl->getLinkTarget($this, $this->getViewBack()));
         $this->setTitleAndIcon();
 
         $ilLocator->addRepositoryItems($_GET['ref_id']);
@@ -86,26 +84,18 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
      */
     public function executeCommand() {
         $this->checkAccess();
-
-        $ass = ilExAssignment::getInstancesByExercise($this->exercise->getId());
-
-        foreach ($ass as $as){
-            if ($as->getID()== $this->selected_assignment){
-                $this->assignment = $as;
-            }
-        }
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
         $this->prepareOutput();
-
-        var_dump($cmd);
 
         switch ($cmd) {
             case 'view':
                 $this->view();
                 break;
             default:
+                $this->assignment=$this->getAssignment($_GET["ass_id"]);
                 $this->{$cmd."Object"}();
+
                 break;
         }
 
@@ -121,6 +111,16 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
     protected function view() {
         $this->membersObject();
 
+    }
+
+    protected function getAssignment($ass_id){
+        $ass = ilExAssignment::getInstancesByExercise($this->exercise->getId());
+
+        foreach ($ass as $as){
+            if ($as->getID()== $ass_id){
+                return $as;
+            }
+        }
     }
 
     protected function isCourse($ref_id){
@@ -192,6 +192,8 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         return $output;
     }
 
+
+
     public function membersObject(){
         global $tpl, $ilCtrl,$ilToolbar, $lng;
 
@@ -233,10 +235,10 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
                 $options[$a->getId()] = $a->getTitle();
             }
             include_once("./Services/Form/classes/class.ilSelectInputGUI.php");
-            $si = new ilSelectInputGUI($this->lng->txt(""), "ass_id");
-            $si->setOptions($options);
-            $si->setValue($this->assignment->getId());
-            $ilToolbar->addStickyItem($si);
+            $this->selInputAss = new ilSelectInputGUI($this->lng->txt(""), "ass_id");
+            $this->selInputAss->setOptions($options);
+            $this->selInputAss->setValue($this->assignment->getId());
+            $ilToolbar->addStickyItem($this->selInputAss);
 
             include_once("./Services/UIComponent/Button/classes/class.ilSubmitButton.php");
             $button = ilSubmitButton::getInstance();
@@ -285,9 +287,22 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         }
 
         $ilCtrl->setParameter($this, "ass_id", "");
-
-        //$this->tpl->setContent($ilToolbar->getHTML());
         return;
+    }
+
+    function saveStatusAllObject()
+    {
+        var_dump($this->assignment);
+        $data = array();
+        foreach(array_keys($_POST["id"]) as $user_id)
+        {
+            $data[-1][$user_id] = array(
+                "status" => ilUtil::stripSlashes($_POST["status"][$user_id])
+            ,"notice" => ilUtil::stripSlashes($_POST["notice"][$user_id])
+            ,"mark" => ilUtil::stripSlashes($_POST["mark"][$user_id])
+            );
+        }
+        $this->saveStatus($data);
     }
 
     protected function saveStatus(array $a_data)
@@ -298,13 +313,15 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
         $saved_for = array();
 
-        $this->getSelectedAssignment();
+
+        var_dump($this->assignment);
         foreach($a_data as $ass_id => $users)
         {
             $ass = ($ass_id < 0)
-                ? $this->getSelectedAssignment()
+                ? $this->assignment
                 : new ilExAssignment($ass_id);
 
+            var_dump($ass);
             foreach($users as $user_id => $values)
             {
                 // this will add team members if available
@@ -332,20 +349,6 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         //$ilCtrl->redirect($this, $this->getViewBack());
     }
 
-    protected function getSelectedAssignment(){
-        $assignment_list =  ilExAssignment::getInstancesByExercise($this->exercise->getId());
-        $selected_assignment = ilUtil::stripSlashes($_POST["ass_id"]);
-        var_dump($assignment_list);
-        var_dump($selected_assignment);
-        foreach ($assignment_list as $as){
-            if ($as->getID()== $selected_assignment){
-                $this->assignment = $as;
-                return $as;
-            }
-        }
-    }
-
-
 
     public function selectAssignmentObject(){
 
@@ -361,10 +364,10 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         foreach ($ass as $as){
           if ($as->getID()== $this->selected_assignment){
                $this->assignment = $as;
+               $this->assign[0] = $as;
           }
           }
-
-            $this->membersObject();
+        $this->membersObject();
 
     }
 
