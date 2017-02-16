@@ -346,7 +346,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         }
 
         ilUtil::sendSuccess($this->lng->txt("exc_status_saved")." ".$save_for_str, true);
-        //$ilCtrl->redirect($this, $this->getViewBack());
+        $ilCtrl->redirect($this, $this->getViewBack());
     }
 
 
