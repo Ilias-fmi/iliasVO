@@ -71,3 +71,7 @@ creation_succeeded#:#Gruppen neu angelegt:<br>%s<br>
 creation_failed#:#Erstellen der Gruppen fehlgeschlagen, überprüfen Sie ihre Eingaben.
 obj_acop#:#AdminContainer Plugin
 obj_acop_desc#:#Hier können sie einfach Gruppen erstellen und bearbeiten.
+obj_extu_desc#:#Hier können sie Abgaben nach Gruppen und Übung filtern, sowie Punkte eintragen und Abgaben herunterladen.
+obj_extu#:#Abgaben und Noten
+exc_select_ass_grp#:#Gruppe und Übungseinheit anzeigen
+tab_tutor#:#Gruppenfilter

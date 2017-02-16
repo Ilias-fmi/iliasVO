@@ -242,7 +242,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
             include_once("./Services/UIComponent/Button/classes/class.ilSubmitButton.php");
             $button = ilSubmitButton::getInstance();
-            $button->setCaption("exc_select_ass_grp");
+            $button->setCaption($this->pl->txt("exc_select_ass_grp"));
             $button->setCommand("selectAssignment");
             $ilToolbar->addStickyItem($button);
 

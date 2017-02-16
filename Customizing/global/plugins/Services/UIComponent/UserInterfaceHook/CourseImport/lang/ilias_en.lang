@@ -68,4 +68,10 @@ import_failed#:#Course import failed. The validation exited with the following e
 creation_succeeded#:#Groups created successfully:<br>%s<br>
 creation_failed#:#Creating groups has failed. Please check your input.
 obj_acop#:#AdminContainer Plugin
-obj_acop_desc#:#Here you can easily create or modifiy Groups.
+obj_acop_desc#:#Here you can easily create or modifiy groups.
+obj_extu_desc#:#Here you can filter for groups and assignments
+obj_extu#:#Submissions and Grades
+exc_select_ass_grp#:#Select Group and Assignment
+tab_tutor#:#Groupfilter
+obj_link#:#Link object
+obj_link_desc#:#Select groups you want to link the object.
