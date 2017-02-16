@@ -269,7 +269,7 @@ class ilCourseImportGroupGUI
         $reg_type = $this->reg_proc->getValue();
         $folder_title = $this->group_folder_name->getValue();
 
-        if ($_POST['group_folder_name_checkbox']){
+        if ($_POST['group_folder_name_checkbox'] AND $this->folderAlreadyExistingCourse($folder_title)){
 
             $courseFolder = new ilObjFolder();
             $courseFolder->setTitle($folder_title);
@@ -332,8 +332,6 @@ class ilCourseImportGroupGUI
                     WHERE om.obj_id = '".$group->getId()."' AND om.usr_id = '".$userID."' ";
                  $ilDB->manipulate($query);
 
-
-                var_dump($folder_check);
                 if ($_POST['group_folder_name_checkbox']){
 
                     $groupFolder = new ilObjFolder();
@@ -359,6 +357,79 @@ class ilCourseImportGroupGUI
                 $this->tpl->setContent($form->getHTML());
 
             }
+    }
+
+    protected function groupsInCourse(){
+        global $ilDB;
+        $group_id= array();
+
+        $query = "select oref.ref_id from ilias.crs_items as citem
+                  join ilias.object_reference as oref on oref.ref_id = citem.obj_id
+                  join ilias.object_data as od on oref.obj_id = od.obj_id                  
+                  join ilias.crs_items as ci on oref.ref_id = ci.obj_id
+                  where od.type='grp' and ci.parent_id='".$_GET['ref_id']."' and oref.deleted is null";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($group_id,$record);
+        }
+
+        return $group_id;
+    }
+
+    protected function folderAlreadyExistingCourse($folder_name){
+        global $ilDB;
+        $folderCourse = array();
+
+        //check if the folder already exists in the course
+        $query = "select COUNT(*) from ilias.crs_items as citem
+                  join ilias.object_reference as oref on oref.ref_id = citem.obj_id
+                  join ilias.object_data as od on oref.obj_id = od.obj_id                  
+                  join ilias.crs_items as ci on oref.ref_id = ci.obj_id
+                  where od.type='fold' and ci.parent_id='".$_GET['ref_id']."' and od.title='".$folder_name."' and oref.deleted is null";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($folderCourse,$record);
+        }
+
+        //if folder already exists in the course
+        if ($folderCourse[0]["count(*)"] != 0) {
+            ilUtil::sendFailure($this->pl->txt("folderAlreadyExistingCourse"), true);
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
+    protected function folderAlreadyExistingGroup($folder_name){
+        global $ilDB;
+        $folderGroup = array();
+
+        foreach ($this->groupsInCourse() as $folderGroup){
+
+
+
+            //check if folder exists in one of the groups
+            $query = "select oref.ref_id from ilias.crs_items as citem
+                  join ilias.object_reference as oref on oref.ref_id = citem.obj_id
+                  join ilias.object_data as od on oref.obj_id = od.obj_id                  
+                  join ilias.crs_items as ci on oref.ref_id = ci.obj_id
+                  where od.type='fold' and ci.parent_id='".$folderGroup[0]['ref_id']."' and od.title='".$folder_name."' and oref.deleted is null";
+            $result = $ilDB->query($query);
+            while ($record = $ilDB->fetchAssoc($result)){
+                array_push($folderGroup,$record);
+            }
+
+        }
+
+        //if the folder already exists in one of the groups in the course
+        //if ($folderGroup[0]["count(*)"] != 0) {
+        //    ilUtil::sendFailure($this->pl->txt("folderAlreadyExistingGroup"), true);
+        //    return false;
+        //} else {
+        //    var_dump($folderGroup);
+            return $folderGroup;
+        //}
     }
 
 
