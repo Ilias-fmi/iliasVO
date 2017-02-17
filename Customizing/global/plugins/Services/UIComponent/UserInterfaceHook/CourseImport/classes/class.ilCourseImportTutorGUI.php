@@ -65,8 +65,10 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
         $this->ctrl->getRedirectSource();
 
-        $this->tabs->setBackTarget($this->pl->txt('back'), $lng->txt("back"),
-            $ilCtrl->getLinkTarget($this, $this->getViewBack()));
+    $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
+            'ilExerciseHandlerGUI',
+           'ilrepositorygui',
+        )));
         $this->setTitleAndIcon();
 
         $ilLocator->addRepositoryItems($_GET['ref_id']);
@@ -373,8 +375,9 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
     protected function checkAccess() {
         global $ilAccess, $ilErr;
-        if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {
+        if (!$ilAccess->checkAccess("write", "", $_GET['ref_id'])) {
             $ilErr->raiseError($this->lng->txt("no_permission"), $ilErr->WARNING);
         }
     }
 }
+

@@ -67,9 +67,9 @@ class ilCourseImportLinkGUI{
 
         $this->ctrl->getRedirectSource();
 
-        $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
-            'ilexercisehandlergui',
-            'ilexercisehandlergui',
+         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
+            'ilrepositorygui',
+            'ilExerciseHandlerGUI',
         )));
         $this->setTitleAndIcon();
 
@@ -353,7 +353,7 @@ var_dump($cmd);
     protected function checkAccess()
     {
         global $ilAccess, $ilErr;
-        if (!$ilAccess->checkAccess("read", "", $_GET['ref_id'])) {
+        if (!$ilAccess->checkAccess("write", "", $_GET['ref_id'])) {
             $ilErr->raiseError($this->lng->txt("no_permission"), $ilErr->WARNING);
         }
     }
