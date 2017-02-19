@@ -269,7 +269,7 @@ class ilCourseImportGroupGUI
         $reg_type = $this->reg_proc->getValue();
         $folder_title = $this->group_folder_name->getValue();
 
-        if ($_POST['group_folder_name_checkbox'] AND $this->folderAlreadyExistingCourse($folder_title)){
+        if ($_POST['group_folder_name_checkbox'] AND !($this->folderAlreadyExistingCourse($folder_title))){
 
             $courseFolder = new ilObjFolder();
             $courseFolder->setTitle($folder_title);
@@ -277,6 +277,20 @@ class ilCourseImportGroupGUI
             $courseFolder->createReference();
             $courseFolder->putInTree($_GET['ref_id']);
             $courseFolder->setPermissions($_GET['ref_id']);
+
+        }
+
+        foreach ($this->groupsInCourse() as $groupsInCourse){
+
+            //adminFolder is created in every existing group which hasn't had such a folder yet
+            if (!($this->folderAlreadyExistingGroup($folder_title, $groupsInCourse['ref_id']))){
+                $oldGroupFolder = new ilObjFolder();
+                $oldGroupFolder->setTitle($folder_title);
+                $oldGroupFolder->create();
+                $oldGroupFolder->createReference();
+                $oldGroupFolder->putInTree($groupsInCourse['ref_id']);
+                $oldGroupFolder->setPermissions($groupsInCourse['ref_id']);
+            }
 
         }
 
@@ -393,43 +407,37 @@ class ilCourseImportGroupGUI
 
         //if folder already exists in the course
         if ($folderCourse[0]["count(*)"] != 0) {
-            ilUtil::sendFailure($this->pl->txt("folderAlreadyExistingCourse"), true);
-            return false;
-        } else {
+            //ilUtil::sendFailure($this->pl->txt("folderAlreadyExistingCourse"), true);
             return true;
+        } else {
+            return false;
         }
 
     }
 
-    protected function folderAlreadyExistingGroup($folder_name){
+    protected function folderAlreadyExistingGroup($folder_name,$group_ref_id){
         global $ilDB;
         $folderGroup = array();
 
-        foreach ($this->groupsInCourse() as $folderGroup){
-
-
-
-            //check if folder exists in one of the groups
-            $query = "select oref.ref_id from ilias.crs_items as citem
+            //check if folder exists in a group
+            $query = "select COUNT(*) from ilias.crs_items as citem
                   join ilias.object_reference as oref on oref.ref_id = citem.obj_id
                   join ilias.object_data as od on oref.obj_id = od.obj_id                  
                   join ilias.crs_items as ci on oref.ref_id = ci.obj_id
-                  where od.type='fold' and ci.parent_id='".$folderGroup[0]['ref_id']."' and od.title='".$folder_name."' and oref.deleted is null";
+                  where od.type='fold' and ci.parent_id='".$group_ref_id."' and od.title='".$folder_name."' and oref.deleted is null";
             $result = $ilDB->query($query);
             while ($record = $ilDB->fetchAssoc($result)){
                 array_push($folderGroup,$record);
             }
 
-        }
 
-        //if the folder already exists in one of the groups in the course
-        //if ($folderGroup[0]["count(*)"] != 0) {
-        //    ilUtil::sendFailure($this->pl->txt("folderAlreadyExistingGroup"), true);
-        //    return false;
-        //} else {
-        //    var_dump($folderGroup);
-            return $folderGroup;
-        //}
+        //if the folder already exists in a group
+        if ($folderGroup[0]["count(*)"] != 0) {
+            //ilUtil::sendFailure($this->pl->txt("folderAlreadyExistingGroup"), true);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
