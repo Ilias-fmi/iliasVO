@@ -75,3 +75,4 @@ exc_select_ass_grp#:#Select Group and Assignment
 tab_tutor#:#Groupfilter
 obj_link#:#Link object
 obj_link_desc#:#Select groups you want to link the object.
+exc_no_submission_in_group#:#No submission in selected group: 

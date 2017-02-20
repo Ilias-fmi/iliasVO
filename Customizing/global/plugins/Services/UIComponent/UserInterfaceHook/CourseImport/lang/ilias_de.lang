@@ -75,3 +75,6 @@ obj_extu_desc#:#Hier können sie Abgaben nach Gruppen und Übung filtern, sowie 
 obj_extu#:#Abgaben und Noten
 exc_select_ass_grp#:#Gruppe und Übungseinheit anzeigen
 tab_tutor#:#Gruppenfilter
+obj_link#:#Objekt Verlinken
+obj_link_desc#:#Wählen sie die Gruppen in die das Objekt verlinkt werden soll.
+exc_no_submission_in_group#:#Keine Abgabe in Gruppe: 

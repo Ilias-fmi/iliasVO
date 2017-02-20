@@ -83,6 +83,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
      *
      */
     public function executeCommand() {
+        global $ilCtrl,$ilTabs,$lng;
         $this->checkAccess();
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
@@ -94,13 +95,120 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
                 break;
             default:
                 $this->assignment=$this->getAssignment($_GET["ass_id"]);
-                $this->{$cmd."Object"}();
+                $this->group = $_POST["grp_id"];
+                $class = $ilCtrl->getNextClass($this);
+                $cmd = $ilCtrl->getCmd("listPublicSubmissions");
+                switch($class)
+                {
+                    case "ilfilesystemgui":
+                        var_dump("ilfilesystemgui");
+                        var_dump($ilCtrl->getCmd());
+                        $ilTabs->clearTargets();
+                        $ilTabs->setBackTarget($lng->txt("back"),
+                            $ilCtrl->getLinkTarget($this, $this->getViewBack()));
 
-                break;
+                        ilUtil::sendInfo($lng->txt("exc_fb_tutor_info"));
+
+                        include_once("./Modules/Exercise/classes/class.ilFSStorageExercise.php");
+                        $fstorage = new ilFSStorageExercise($this->exercise->getId(), $this->assignment->getId());
+                        $fstorage->create();
+
+                        $submission = new ilExSubmission($this->assignment, (int)$_GET["member_id"]);
+                        $feedback_id = $submission->getFeedbackId();
+                        $noti_rec_ids = $submission->getUserIds();
+
+                        include_once("./Services/User/classes/class.ilUserUtil.php");
+                        $fs_title = array();
+                        foreach($noti_rec_ids as $rec_id)
+                        {
+                            $fs_title[] = ilUserUtil::getNamePresentation($rec_id, false, false, "", true);
+                        }
+                        $fs_title = implode(" / ", $fs_title);
+
+                        include_once("./Services/FileSystem/classes/class.ilFileSystemGUI.php");
+                        $fs_gui = new ilFileSystemGUI($fstorage->getFeedbackPath($feedback_id));
+                        $fs_gui->setTableId("excfbfil".$this->assignment->getId()."_".$feedback_id);
+                        $fs_gui->setAllowDirectories(false);
+                        $fs_gui->setTitle($lng->txt("exc_fb_files")." - ".
+                            $this->assignment->getTitle()." - ".
+                            $fs_title);
+                        $pcommand = $fs_gui->getLastPerformedCommand();
+                        if (is_array($pcommand) && $pcommand["cmd"] == "create_file")
+                        {
+                            $this->exercise->sendFeedbackFileNotification($pcommand["name"],
+                                $noti_rec_ids, $this->assignment->getId());
+                        }
+                        $this->ctrl->forwardCommand($fs_gui);
+                        break;
+
+                    case 'ilrepositorysearchgui':
+                        var_dump("ilrepositorysearchgui");
+                        var_dump($ilCtrl->getCmd());
+                        include_once('./Services/Search/classes/class.ilRepositorySearchGUI.php');
+                        $rep_search = new ilRepositorySearchGUI();
+                        $rep_search->setTitle($this->lng->txt("exc_add_participant"));
+                        $rep_search->setCallback($this,'addMembersObject');
+
+                        // Set tabs
+                        $this->addSubTabs("assignment");
+                        $this->ctrl->setReturn($this,'members');
+
+                        $this->ctrl->forwardCommand($rep_search);
+                        break;
+
+                    case "ilexsubmissionteamgui":
+                        var_dump("ilexsubmissionteamgui");
+                        var_dump($ilCtrl->getCmd());
+                        include_once "Modules/Exercise/classes/class.ilExSubmissionTeamGUI.php";
+                        $gui = new ilExSubmissionTeamGUI($this->exercise, $this->initSubmission());
+                        $ilCtrl->forwardCommand($gui);
+                        break;
+
+                    case "ilexsubmissionfilegui":
+                        var_dump("ilexsubmissionfilegui");
+                        var_dump($ilCtrl->getCmd());
+                        include_once "Modules/Exercise/classes/class.ilExSubmissionFileGUI.php";
+                        $gui = new ilExSubmissionFileGUI($this->exercise, $this->initSubmission());
+                        $ilCtrl->forwardCommand($gui);
+                        break;
+
+                    case "ilexsubmissiontextgui":
+                        var_dump("ilexsubmissiontextgui");
+                        var_dump($ilCtrl->getCmd());
+                        include_once "Modules/Exercise/classes/class.ilExSubmissionTextGUI.php";
+                        $gui = new ilExSubmissionTextGUI($this->exercise, $this->initSubmission());
+                        $ilCtrl->forwardCommand($gui);
+                        break;
+
+                    case "ilexpeerreviewgui":
+                        var_dump("ilexpeerreviewgui");
+                        var_dump($ilCtrl->getCmd());
+                        include_once "Modules/Exercise/classes/class.ilExPeerReviewGUI.php";
+                        $gui = new ilExPeerReviewGUI($this->assignment, $this->initSubmission());
+                        $ilCtrl->forwardCommand($gui);
+                        break;
+
+                    default:
+                        var_dump("default");
+                        $this->{$cmd."Object"}();
+                        break;
+                }
         }
 
         $this->tpl->getStandardTemplate();
         $this->tpl->show();
+    }
+
+    protected function initSubmission()
+    {
+        $this->tabs_gui = $this->tabs;
+        $back_cmd = $this->getViewBack();
+        $this->ctrl->setReturn($this, $back_cmd);
+        $this->tabs_gui->setBackTarget($this->lng->txt("back"),
+            $this->ctrl->getLinkTarget($this, $back_cmd));
+
+        include_once "Modules/Exercise/classes/class.ilExSubmission.php";
+        return new ilExSubmission($this->assignment, $_REQUEST["member_id"], null, true);
     }
 
 
@@ -201,6 +309,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         $ex_gui =& new ilObjExerciseGUI("", (int) $_GET["ref_id"], true, false);
         $this->exercise=$ex_gui->object;
 
+        $this->group = $_POST["grp_id"];
         $group_options = $this->getGroups();
 
         include_once 'Services/Tracking/classes/class.ilLPMarks.php';
@@ -290,6 +399,64 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         return;
     }
 
+    function downloadAllObject()
+    {
+        global $ilCtrl;
+        $members = array();
+
+        $this->assignment = $this->getAssignment($_POST['ass_id']);
+        $this->group = $_POST["grp_id"];
+
+        foreach($this->exercise->members_obj->getMembers() as $member_id)
+        {
+
+            if($this->isGroupMember($member_id,$this->group)) {
+                $submission = new ilExSubmission($this->assignment, $member_id);
+                $submission->updateTutorDownloadTime();
+
+                // get member object (ilObjUser)
+                if (ilObject::_exists($member_id)) {
+                    // adding file metadata
+                    foreach ($submission->getFiles() as $file) {
+                        $members[$file["user_id"]]["files"][$file["returned_id"]] = $file;
+                    }
+
+                    $tmp_obj =& ilObjectFactory::getInstanceByObjId($member_id);
+                    $members[$member_id]["name"] = $tmp_obj->getFirstname() . " " . $tmp_obj->getLastname();
+                    unset($tmp_obj);
+                }
+            }else{
+                $grps = $this->getGroups();
+                $grp_title = $grps[$this->group];
+                ilUtil::sendFailure($this->pl->txt("exc_no_submission_in_group")." ".$grp_title,true);
+                $ilCtrl->redirect($this, $this->getViewBack());
+            }
+        }
+
+
+        ilExSubmission::downloadAllAssignmentFiles($this->assignment, $members);
+    }
+    protected function isGroupMember($member,$group_id){
+        global $ilDB;
+
+
+        $data= array();
+        $query = "select om.usr_id
+        from ilias.obj_members as om
+        where om.obj_id = '".$group_id."' and om.usr_id = '".$member."'";
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+
+        if(empty($data)){
+            return false;
+        }
+
+        return true;
+
+    }
+
     function saveStatusAllObject()
     {
         var_dump($this->assignment);
@@ -354,6 +521,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
             global $ilTabs;
 
+        $_GET["grp_id"] = ilUtil::stripSlashes($_POST["grp_id"]);
         $this->group = ilUtil::stripSlashes($_POST["grp_id"]);
 
         $_GET["ass_id"] = ilUtil::stripSlashes($_POST["ass_id"]);
