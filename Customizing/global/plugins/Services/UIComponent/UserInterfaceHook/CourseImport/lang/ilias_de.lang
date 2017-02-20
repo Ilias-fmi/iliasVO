@@ -1,3 +1,8 @@
+obj_link#:#Verlinkung
+link_desc#:#Hier können Objekte in Gruppen verlinkt werden
+link_selected#:#in bestimmte Gruppen verlinken
+link_all#:#in alle Gruppen verlinken
+link_type#:#Verlinkungsoptionen
 movedSuccessful#:#&nbsp;wurde erfolgreich von&nbsp;
 movedTo#:#&nbsp;nach&nbsp;
 moved#:#&nbsp;verschoben.

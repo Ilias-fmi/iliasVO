@@ -1,3 +1,8 @@
+obj_link#:#Link
+link_desc#:#Here it is possible to link several objects into groups
+link_selected#:#link in selected groups
+link_all#:#link in all groups
+link_type#:#link options
 movedSuccessful#:#&nbsp;was moved successfully from&nbsp;
 movedTo#:#&nbsp;to&nbsp;
 moved#:#&nbsp;.
