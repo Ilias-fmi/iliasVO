@@ -283,7 +283,8 @@ class ilCourseImportGroupGUI
         foreach ($this->groupsInCourse() as $groupsInCourse){
 
             //adminFolder is created in every existing group which hasn't had such a folder yet
-            if (!($this->folderAlreadyExistingGroup($folder_title, $groupsInCourse['ref_id']))){
+            if ($_POST['group_folder_name_checkbox'] AND
+                !($this->folderAlreadyExistingGroup($folder_title, $groupsInCourse['ref_id']))){
                 $oldGroupFolder = new ilObjFolder();
                 $oldGroupFolder->setTitle($folder_title);
                 $oldGroupFolder->create();
