@@ -60,18 +60,20 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
 
         $this->ctrl->setParameterByClass('ilobjexercisegui', 'ref_id', $_GET['ref_id']);
+        $this->ctrl->setParameterByClass('ilexercisehandlergui', 'ref_id', $_GET['ref_id']);
+
 
 
 
         $this->ctrl->getRedirectSource();
 
     $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
-            'ilExerciseHandlerGUI',
-           'ilrepositorygui',
+        'ilrepositorygui',
+        'ilExerciseHandlerGUI',
         )));
         $this->setTitleAndIcon();
 
-        $ilLocator->addRepositoryItems($_GET['ref_id']);
+        $ilLocator->addContextItems($_GET['ref_id']);
         $tpl->setLocator();
     }
 

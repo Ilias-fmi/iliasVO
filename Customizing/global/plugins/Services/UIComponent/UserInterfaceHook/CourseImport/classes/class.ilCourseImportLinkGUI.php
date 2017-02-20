@@ -73,7 +73,7 @@ class ilCourseImportLinkGUI{
         )));
         $this->setTitleAndIcon();
 
-        $ilLocator->addRepositoryItems($_GET['ref_id']);
+        $ilLocator->addContextItems($_GET['ref_id']);
         $tpl->setLocator();
     }
     protected function setTitleAndIcon()

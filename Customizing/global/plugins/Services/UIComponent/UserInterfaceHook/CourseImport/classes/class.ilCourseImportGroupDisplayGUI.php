@@ -1,6 +1,5 @@
 <?php
 require_once './Services/Form/classes/class.ilPropertyFormGUI.php';
-require_once 'class.ilCourseImportGroupTable.php';
 require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
 require_once './Services/Form/classes/class.ilDateDurationInputGUI.php';
 
