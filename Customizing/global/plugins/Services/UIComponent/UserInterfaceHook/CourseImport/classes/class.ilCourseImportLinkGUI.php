@@ -48,6 +48,8 @@ class ilCourseImportLinkGUI{
     public function __construct()
     {
         global  $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
+        $this->unique_id = md5(uniqid());
+        var_dump($this->unique_id);
         $this->lng = $lng;
         $this->tabs = $ilTabs;
         $this->ctrl = $ilCtrl;
@@ -73,7 +75,7 @@ class ilCourseImportLinkGUI{
         )));
         $this->setTitleAndIcon();
 
-        $ilLocator->addContextItems($_GET['ref_id']);
+        $ilLocator->addRepositoryItems($_GET['ref_id']);
         $tpl->setLocator();
     }
     protected function setTitleAndIcon()
@@ -88,7 +90,7 @@ class ilCourseImportLinkGUI{
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
         $this->prepareOutput();
-var_dump($cmd);
+        var_dump($cmd);
         switch ($cmd) {
             default:
                 $this->$cmd();
@@ -119,16 +121,23 @@ var_dump($cmd);
 
         var_dump($data);
 
+        //radio button to select if to link to all groups or only to single ones
+        $link_proc = new ilRadioGroupInputGUI($this->pl->txt('link_type'),'link_type');
+        $opt1 = new ilRadioOption($this->pl->txt('link_all'), 'link_all');
+        $opt2 = new ilRadioOption($this->pl->txt('link_selected'), 'link_selected');
+
         foreach ($data as $row){
 
-
             $checkbox_link = new ilCheckboxInputGUI($row['title'], $row['ref_id']);
-           //$checkbox_link->setValue($this->isReferenced($row['obj_id'],$_GET['ref_id']));
-            $form->addItem($checkbox_link);
-
-
+            //$checkbox_link->setValue($this->isReferenced($row['obj_id'],$_GET['ref_id']));
+            $opt2->addSubItem($checkbox_link);
 
         }
+
+        $link_proc->addOption($opt1);
+        $link_proc->addOption($opt2);
+
+        $form->addItem($link_proc);
         $form->addCommandButton('link',$this->pl->txt('save_link'));
         return $form;
     }
