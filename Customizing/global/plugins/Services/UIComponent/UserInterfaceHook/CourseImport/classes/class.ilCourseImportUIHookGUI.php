@@ -34,6 +34,8 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
 	{
         /** @var ilTabsGUI $tabs */
         global $ilTabs;
+        
+        global $ilAccess, $ilErr;
 
         $tabs = $a_par['tabs'];
 
@@ -47,7 +49,7 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
         }
 
         // Tab in einer Uebung
-        if (($_GET["baseClass"] == 'ilExerciseHandlerGUI' || $_GET["baseClass"] == 'ilexercisehandlergui') && $a_part == 'tabs'){
+        if (($_GET["baseClass"] == 'ilExerciseHandlerGUI' || $_GET["baseClass"] == 'ilexercisehandlergui') && $a_part == 'tabs'&&$ilAccess->checkAccess("write", "", $_GET['ref_id'])){
             $this->ctrl->setParameterByClass('ilcourseimportlinkgui', 'ref_id', $_GET['ref_id']);
             $this->ctrl->setParameterByClass('ilcourseimporttutorgui','ref_id',$_GET['ref_id']);
             $link2 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportLinkGUI'));
