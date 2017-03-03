@@ -168,7 +168,7 @@ class ilCourseImportGroupDisplayGUI
             $section = new ilFormSectionHeaderGUI();
             $section->setTitle($row['title']);
             $form->addItem($section);
-            $ref_id_field = new ilNumberInputGUI($this->pl->txt("ref_id"), "ref_id".$n);
+            //$ref_id_field = new ilNumberInputGUI($this->pl->txt("ref_id"), "ref_id".$n);
             $textfield_name = new ilTextInputGUI($this->pl->txt("group_name"), "group_name".$n);
             $textfield_description = new ilTextInputGUI($this->pl->txt("group_description"),"description".$n);
             $textfield_tutor = new ilTextInputGUI($a_options['auto_complete_name'], 'tutor'.$n);
@@ -182,9 +182,11 @@ class ilCourseImportGroupDisplayGUI
             $dur->setStartText($this->pl->txt('cal_start'));
             $dur->setEndText($this->pl->txt('cal_end'));
             $dur->setShowTime(true);
-            $ref_id_field->setValue($row['obj_id']);
-            $ref_id_field->setHiddenTitle($row['obj_id']);
+            //$ref_id_field->setValue($row['obj_id']);
+            //$ref_id_field->setHiddenTitle($row['obj_id']);
+            //$ref_id_field->setDisabled(true);
             $textfield_name->setValue($row['title']);
+            $textfield_name->setHiddenTitle($row['obj_id']);
             $textfield_description->setValue($row['description']);
             $textfield_tutor->setValue($row['login']);
             $textfield_members->setValue($row['registration_max_members']);
@@ -195,7 +197,7 @@ class ilCourseImportGroupDisplayGUI
             $this->group_admins[$row['obj_id']]=$row['login'];
             $dur->setStart($start_time);
             $dur->setEnd($end_time);
-            $form->addItem($ref_id_field);
+            //$form->addItem($ref_id_field);
             $form->addItem($textfield_name);
             $form->addItem($textfield_description);
 
@@ -204,7 +206,6 @@ class ilCourseImportGroupDisplayGUI
             $time_limit->addSubItem($dur);
             $form->addItem($textfield_members);
             $form->addItem($time_limit);
-
 
             
             $n=$n+1;
@@ -220,16 +221,16 @@ class ilCourseImportGroupDisplayGUI
         $this->form = $this->initForm();
         $this->form->setValuesByPost();
         $items = $this->form->getItems();
-        $group_items = array_chunk($items,7);
+        $group_items = array_chunk($items,6);
         $n=1;
         foreach ($group_items as $group){
 
             $ref_id = $group[1]->getHiddenTitle();
-            $title = $group[2]->getValue();
-            $description =$group[3]->getValue();
-            $tutor=$group[4]->getValue();
-            $members=$group[5]->getValue();
-            $duration=$group[6];
+            $title = $group[1]->getValue();
+            $description =$group[2]->getValue();
+            $tutor=$group[3]->getValue();
+            $members=$group[4]->getValue();
+            $duration=$group[5];
             $time_reg_enabled = $duration->getChecked();
             $reg_start=$this->loadDate('reg'.$n,'start');
             $reg_end = $this->loadDate('reg'.$n,'end');
