@@ -16,7 +16,7 @@ require_once './Services/Form/classes/class.ilDateTimeInputGUI.php';
  * Date: 06.02.2017
  * Time: 14:16
  * @ilCtrl_IsCalledBy ilCourseImportLinkGUI: ilUIPluginRouterGUI
- * @ilCtrl_Calls      ilCourseImportLinkGUI: ilExerciseHandlerGUI
+ * @ilCtrl_Calls      ilCourseImportLinkGUI: ilExerciseHandlerGUI, ilRepositoryGUI, ilObjTestGUI
  */
 
 class ilCourseImportLinkGUI{
@@ -45,11 +45,13 @@ class ilCourseImportLinkGUI{
      */
     protected $lng;
 
+    var $object;
+
     public function __construct()
     {
         global  $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
         $this->unique_id = md5(uniqid());
-        var_dump($this->unique_id);
+        //var_dump($this->unique_id);
         $this->lng = $lng;
         $this->tabs = $ilTabs;
         $this->ctrl = $ilCtrl;
@@ -63,19 +65,41 @@ class ilCourseImportLinkGUI{
         global $ilLocator, $tpl;
 
         $this->ctrl->setParameterByClass('ilexercisehandlergui', 'ref_id', $_GET['ref_id']);
+        $this->ctrl->setParameterByClass('ilobjtestgui', 'ref_id', $_GET['ref_id']);
         $this->ctrl->setParameterByClass('ilcourseimportlinkgui', 'ref_id', $_GET['ref_id']);
 
         $this->tabs->addTab('link', $this->pl->txt('tab_link'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportLinkGUI')));
 
         $this->ctrl->getRedirectSource();
 
-         $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
-            'ilrepositorygui',
-            'ilExerciseHandlerGUI',
-        )));
+        if (ilObject::_lookupType($_GET['ref_id'], true) == 'tst'){
+
+            $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
+                'ilrepositorygui',
+                'ilObjTestGUI',
+            )));
+
+            $this->object = ilObjectFactory::getInstanceByRefId($_GET['ref_id']);
+            $ilLocator->addRepositoryItems($_GET['ref_id']);
+            $ilLocator->addItem($this->object->getTitle(),
+                $this->ctrl->getLinkTargetByClass(array('ilrepositorygui','ilObjTestGUI')), "", $_GET["ref_id"]);
+
+        } else {
+
+            $this->tabs->setBackTarget($this->pl->txt('back'), $this->ctrl->getLinkTargetByClass(array(
+                'ilrepositorygui',
+                'ilExerciseHandlerGUI',
+            )));
+
+            $this->object = ilObjectFactory::getInstanceByRefId($_GET['ref_id']);
+            $ilLocator->addRepositoryItems($_GET['ref_id']);
+            $ilLocator->addItem($this->object->getTitle(),
+                $this->ctrl->getLinkTargetByClass(array('ilrepositorygui','ilExerciseHandlerGUI')), "", $_GET["ref_id"]);
+
+        }
         $this->setTitleAndIcon();
 
-        $ilLocator->addRepositoryItems($_GET['ref_id']);
+
         $tpl->setLocator();
     }
     protected function setTitleAndIcon()
@@ -90,7 +114,7 @@ class ilCourseImportLinkGUI{
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
         $this->prepareOutput();
-        var_dump($cmd);
+        //var_dump($cmd);
         switch ($cmd) {
             default:
                 $this->$cmd();
@@ -119,7 +143,7 @@ class ilCourseImportLinkGUI{
         $form->setFormAction($this->ctrl->getFormAction($this));
         $data = $this->getGroups($_GET['ref_id']);
 
-        var_dump($data);
+        //var_dump($data);
 
         //radio button to select if to link to all groups or only to single ones
         $link_proc = new ilRadioGroupInputGUI($this->pl->txt('link_type'),'link_type');
@@ -154,7 +178,11 @@ class ilCourseImportLinkGUI{
         $group_ids = array();
         $form = $this->initForm();
         $form->setValuesByPost();
+
         $formitems = $form->getItems();
+        $formitems = $formitems[0]->getOptions();
+        $formitems = $formitems[1]->getSubItems();
+
         $folder_name = $this->getFolderName();
 
         foreach($formitems as $checkbox){
@@ -196,9 +224,9 @@ class ilCourseImportLinkGUI{
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);
         }
-        var_dump($data);
+        //var_dump($data);
         if(empty($data)){
-            ilUtil::sendInfo('inf_parent_no_folder');
+            ilUtil::sendInfo($this->pl->txt('inf_parent_no_folder'));
             return -1;
         }
         $folder = $data[0];
@@ -268,7 +296,7 @@ class ilCourseImportLinkGUI{
 
             $group_admin_folder_ids = $this->getAdminFolderIds();
 
-            var_dump($group_admin_folder_ids);
+            //var_dump($group_admin_folder_ids);
 
             foreach($group_admin_folder_ids as $folder_ref_id)
             {
