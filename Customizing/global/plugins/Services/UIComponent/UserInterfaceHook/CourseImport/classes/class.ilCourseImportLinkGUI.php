@@ -81,8 +81,8 @@ class ilCourseImportLinkGUI{
     protected function setTitleAndIcon()
     {
         $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_exc.svg'));
-        $this->tpl->setTitle($this->lng->txt('obj_link'));
-        $this->tpl->setDescription($this->lng->txt('obj_link_desc'));
+        $this->tpl->setTitle($this->pl->txt('obj_link'));
+        $this->tpl->setDescription($this->pl->txt('obj_link_desc'));
     }
     public function executeCommand()
     {
