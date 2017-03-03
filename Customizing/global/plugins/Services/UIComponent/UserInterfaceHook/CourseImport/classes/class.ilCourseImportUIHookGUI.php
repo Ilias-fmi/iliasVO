@@ -58,6 +58,13 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
             $tabs->addTab('tutor',$this->pl->txt('tab_tutor'),$link3);
         }
 
+        //Tab in einem Test
+        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') && $a_part == 'tabs'&&$ilAccess->checkAccess("write", "", $_GET['ref_id'])&& ilObject::_lookupType($_GET['ref_id'], true) == 'tst'){
+            $this->ctrl->setParameterByClass('ilcourseimportlinkgui', 'ref_id', $_GET['ref_id']);
+            $link4 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportLinkGUI'));
+            $tabs->addTab('link', $this->pl->txt('tab_link'), $link4);
+        }
+
         //Tab in Administration -> Kurs
         if ($a_part == 'tabs'&& ilObject::_lookupType($_GET['ref_id'], true) == 'crss'){
 
