@@ -51,7 +51,7 @@ class ilCourseImportLinkGUI{
     {
         global  $ilCtrl, $tpl, $ilTabs, $ilLocator, $lng;
         $this->unique_id = md5(uniqid());
-        var_dump($this->unique_id);
+        //var_dump($this->unique_id);
         $this->lng = $lng;
         $this->tabs = $ilTabs;
         $this->ctrl = $ilCtrl;
@@ -114,7 +114,7 @@ class ilCourseImportLinkGUI{
         $cmd = $this->ctrl->getCmd('view');
         $this->ctrl->saveParameter($this, 'ref_id');
         $this->prepareOutput();
-        var_dump($cmd);
+        //var_dump($cmd);
         switch ($cmd) {
             default:
                 $this->$cmd();
@@ -143,7 +143,7 @@ class ilCourseImportLinkGUI{
         $form->setFormAction($this->ctrl->getFormAction($this));
         $data = $this->getGroups($_GET['ref_id']);
 
-        var_dump($data);
+        //var_dump($data);
 
         //radio button to select if to link to all groups or only to single ones
         $link_proc = new ilRadioGroupInputGUI($this->pl->txt('link_type'),'link_type');
@@ -178,7 +178,11 @@ class ilCourseImportLinkGUI{
         $group_ids = array();
         $form = $this->initForm();
         $form->setValuesByPost();
+
         $formitems = $form->getItems();
+        $formitems = $formitems[0]->getOptions();
+        $formitems = $formitems[1]->getSubItems();
+
         $folder_name = $this->getFolderName();
 
         foreach($formitems as $checkbox){
@@ -220,9 +224,9 @@ class ilCourseImportLinkGUI{
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);
         }
-        var_dump($data);
+        //var_dump($data);
         if(empty($data)){
-            ilUtil::sendInfo('inf_parent_no_folder');
+            ilUtil::sendInfo($this->pl->txt('inf_parent_no_folder'));
             return -1;
         }
         $folder = $data[0];
@@ -292,7 +296,7 @@ class ilCourseImportLinkGUI{
 
             $group_admin_folder_ids = $this->getAdminFolderIds();
 
-            var_dump($group_admin_folder_ids);
+            //var_dump($group_admin_folder_ids);
 
             foreach($group_admin_folder_ids as $folder_ref_id)
             {

@@ -40,7 +40,9 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
         $tabs = $a_par['tabs'];
 
         // Tab im einzelnen Kurs
-        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') && $a_part == 'tabs' &&$ilAccess->checkAccess("write", "", $_GET['ref_id'])&& ilObject::_lookupType($_GET['ref_id'], true) == 'crs'){
+        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui')
+            && $a_part == 'tabs' &&$ilAccess->checkAccess("write", "", $_GET['ref_id'])
+            && ilObject::_lookupType($_GET['ref_id'], true) == 'crs'){
 
             $this->ctrl->setParameterByClass('ilcourseimportgroupgui', 'ref_id', $_GET['ref_id']);
             $link1 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportGroupGUI'));
@@ -49,7 +51,8 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
         }
 
         // Tab in einer Uebung
-        if (($_GET["baseClass"] == 'ilExerciseHandlerGUI' || $_GET["baseClass"] == 'ilexercisehandlergui') && $a_part == 'tabs'&&$ilAccess->checkAccess("write", "", $_GET['ref_id'])){
+        if (($_GET["baseClass"] == 'ilExerciseHandlerGUI' || $_GET["baseClass"] == 'ilexercisehandlergui')
+            && $a_part == 'tabs'&&$ilAccess->checkAccess("write", "", $_GET['ref_id'])){
             $this->ctrl->setParameterByClass('ilcourseimportlinkgui', 'ref_id', $_GET['ref_id']);
             $this->ctrl->setParameterByClass('ilcourseimporttutorgui','ref_id',$_GET['ref_id']);
             $link2 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportLinkGUI'));
@@ -59,7 +62,9 @@ class ilCourseImportUIHookGUI extends ilUIHookPluginGUI
         }
 
         //Tab in einem Test
-        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') && $a_part == 'tabs'&&$ilAccess->checkAccess("write", "", $_GET['ref_id'])&& ilObject::_lookupType($_GET['ref_id'], true) == 'tst'){
+        if (($_GET["baseClass"] == 'ilRepositoryGUI' || $_GET["baseClass"] == 'ilrepositorygui') &&
+            $a_part == 'tabs'&&$ilAccess->checkAccess("write", "", $_GET['ref_id'])
+            && ilObject::_lookupType($_GET['ref_id'], true) == 'tst'){
             $this->ctrl->setParameterByClass('ilcourseimportlinkgui', 'ref_id', $_GET['ref_id']);
             $link4 = $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilCourseImportLinkGUI'));
             $tabs->addTab('link', $this->pl->txt('tab_link'), $link4);
