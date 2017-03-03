@@ -26,6 +26,7 @@ class ilCourseImportExerciseMemberTableGUI extends ilExerciseMemberTableGUI {
         $this->ass = $a_ass;
         $this->ass_id = $this->ass->getId();
         $this->setId("exc_mem_".$this->ass_id);
+        $this->pl = ilCourseImportPlugin::getInstance();
 
 
         include_once("./Modules/Exercise/classes/class.ilFSStorageExercise.php");
@@ -124,7 +125,7 @@ class ilCourseImportExerciseMemberTableGUI extends ilExerciseMemberTableGUI {
         $this->setEnableTitle(true);
         $this->setSelectAllCheckbox("member");
 
-        $this->addMultiCommand("saveStatusSelected", $lng->txt("exc_save_selected"));
+       // $this->addMultiCommand("saveStatusSelected", $lng->txt("exc_save_selected"));
         $this->addMultiCommand("redirectFeedbackMail", $lng->txt("exc_send_mail"));
         $this->addMultiCommand("sendMembers", $lng->txt("exc_send_assignment"));
 
@@ -136,7 +137,7 @@ class ilCourseImportExerciseMemberTableGUI extends ilExerciseMemberTableGUI {
 
         //$this->addMultiCommand("confirmDeassignMembers", $lng->txt("exc_deassign_members"));
 
-        $this->addCommandButton("saveStatusAll", $lng->txt("exc_save_all"));
+        $this->addCommandButton("saveStatusAll", $this->pl->txt("exc_save_all_and_total"));
 
         include_once "Services/Form/classes/class.ilPropertyFormGUI.php";
         include_once "Services/UIComponent/Overlay/classes/class.ilOverlayGUI.php";

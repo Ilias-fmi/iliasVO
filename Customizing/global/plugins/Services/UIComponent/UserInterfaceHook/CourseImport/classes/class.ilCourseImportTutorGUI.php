@@ -32,7 +32,9 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
     protected $assignment_list;
     protected $selected_assignment;
     protected $group;
+    protected $group_marks;
     protected $si;
+    protected $groups_si;
     protected $selInputAss;
 
     /**
@@ -105,8 +107,6 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
                 switch($class)
                 {
                     case "ilfilesystemgui":
-                        var_dump("ilfilesystemgui");
-                        var_dump($ilCtrl->getCmd());
                         $ilTabs->clearTargets();
                         $ilTabs->setBackTarget($lng->txt("back"),
                             $ilCtrl->getLinkTarget($this, $this->getViewBack()));
@@ -146,54 +146,42 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
                         break;
 
                     case 'ilrepositorysearchgui':
-                        var_dump("ilrepositorysearchgui");
-                        var_dump($ilCtrl->getCmd());
                         include_once('./Services/Search/classes/class.ilRepositorySearchGUI.php');
                         $rep_search = new ilRepositorySearchGUI();
                         $rep_search->setTitle($this->lng->txt("exc_add_participant"));
                         $rep_search->setCallback($this,'addMembersObject');
 
                         // Set tabs
-                        $this->addSubTabs("assignment");
                         $this->ctrl->setReturn($this,'members');
 
                         $this->ctrl->forwardCommand($rep_search);
                         break;
 
                     case "ilexsubmissionteamgui":
-                        var_dump("ilexsubmissionteamgui");
-                        var_dump($ilCtrl->getCmd());
                         include_once "Modules/Exercise/classes/class.ilExSubmissionTeamGUI.php";
                         $gui = new ilExSubmissionTeamGUI($this->exercise, $this->initSubmission());
                         $ilCtrl->forwardCommand($gui);
                         break;
 
                     case "ilexsubmissionfilegui":
-                        var_dump("ilexsubmissionfilegui");
-                        var_dump($ilCtrl->getCmd());
                         include_once "Modules/Exercise/classes/class.ilExSubmissionFileGUI.php";
                         $gui = new ilExSubmissionFileGUI($this->exercise, $this->initSubmission());
                         $ilCtrl->forwardCommand($gui);
                         break;
 
                     case "ilexsubmissiontextgui":
-                        var_dump("ilexsubmissiontextgui");
-                        var_dump($ilCtrl->getCmd());
                         include_once "Modules/Exercise/classes/class.ilExSubmissionTextGUI.php";
                         $gui = new ilExSubmissionTextGUI($this->exercise, $this->initSubmission());
                         $ilCtrl->forwardCommand($gui);
                         break;
 
                     case "ilexpeerreviewgui":
-                        var_dump("ilexpeerreviewgui");
-                        var_dump($ilCtrl->getCmd());
                         include_once "Modules/Exercise/classes/class.ilExPeerReviewGUI.php";
                         $gui = new ilExPeerReviewGUI($this->assignment, $this->initSubmission());
                         $ilCtrl->forwardCommand($gui);
                         break;
 
                     default:
-                        var_dump("default");
                         $this->{$cmd."Object"}();
                         break;
                 }
@@ -303,6 +291,7 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
         return $output;
     }
+
 
 
 
@@ -463,20 +452,26 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
     function saveStatusAllObject()
     {
-        var_dump($this->assignment);
+
+        $user_ids = array();
         $data = array();
         foreach(array_keys($_POST["id"]) as $user_id)
         {
+            array_push($user_ids,$user_id);
             $data[-1][$user_id] = array(
                 "status" => ilUtil::stripSlashes($_POST["status"][$user_id])
             ,"notice" => ilUtil::stripSlashes($_POST["notice"][$user_id])
             ,"mark" => ilUtil::stripSlashes($_POST["mark"][$user_id])
             );
+
         }
-        $this->saveStatus($data);
+
+        $this->saveStatus($data,$user_ids);
+
     }
 
-    protected function saveStatus(array $a_data)
+
+    protected function saveStatus(array $a_data,$user_ids = '')
     {
         global $ilCtrl;
 
@@ -485,14 +480,14 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         $saved_for = array();
 
 
-        var_dump($this->assignment);
+
         foreach($a_data as $ass_id => $users)
         {
             $ass = ($ass_id < 0)
                 ? $this->assignment
                 : new ilExAssignment($ass_id);
 
-            var_dump($ass);
+
             foreach($users as $user_id => $values)
             {
                 // this will add team members if available
@@ -516,6 +511,33 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
             $save_for_str = "(".implode($saved_for, " - ").")";
         }
 
+
+        if(!empty($user_ids)){
+            global $ilDB;
+            $ass = ilExAssignment::getInstancesByExercise($this->exercise->getId());
+            $exercise_id = $this->exercise->getId();
+            $ass_ids = array();
+            foreach ($ass as $assignment){
+                array_push($ass_ids,$assignment->getId());
+            }
+
+            foreach ($user_ids as $usr_id) {
+                $data = array();
+                $query = 'SELECT ilias.exc_mem_ass_status.mark from ilias.exc_mem_ass_status where ilias.exc_mem_ass_status.ass_id in (' . implode(",", $ass_ids) . ') and ilias.exc_mem_ass_status.usr_id = '.$usr_id.'';
+                $res = $ilDB->query($query);
+                while ($record = $ilDB->fetchAssoc($res)){
+                    array_push($data,$record);
+                }
+                $totalmark=0;
+                foreach ($data as $ass_mark){
+                    $totalmark+=$ass_mark['mark'];
+                }
+                $query='UPDATE ilias.ut_lp_marks
+                    SET  ilias.ut_lp_marks.mark = '.$totalmark.'
+                    WHERE ilias.ut_lp_marks.obj_id = '.$exercise_id.' AND ilias.ut_lp_marks.usr_id = '.$usr_id.'';
+                $ilDB->manipulate($query);
+            }
+        }
         ilUtil::sendSuccess($this->lng->txt("exc_status_saved")." ".$save_for_str, true);
         $ilCtrl->redirect($this, $this->getViewBack());
     }
