@@ -82,3 +82,4 @@ tab_tutor#:#Groupfilter
 obj_link#:#Link object
 obj_link_desc#:#Select groups you want to link the object.
 exc_no_submission_in_group#:#No submission in selected group: 
+exc_save_all_and_total#:#Save all and update Total Mark

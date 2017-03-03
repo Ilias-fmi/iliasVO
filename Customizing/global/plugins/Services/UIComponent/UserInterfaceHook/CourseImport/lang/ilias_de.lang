@@ -84,3 +84,4 @@ tab_tutor#:#Gruppenfilter
 obj_link#:#Objekt Verlinken
 obj_link_desc#:#Wählen sie die Gruppen in die das Objekt verlinkt werden soll.
 exc_no_submission_in_group#:#Keine Abgabe in Gruppe: 
+exc_save_all_and_total#:#Alle Speichern und Gesamtnote aktualisieren
