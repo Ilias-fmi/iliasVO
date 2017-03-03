@@ -180,15 +180,23 @@ class ilCourseImportLinkGUI{
         $form->setValuesByPost();
 
         $formitems = $form->getItems();
+
+        $checkFormItems = $formitems[0]->getValue();
+
         $formitems = $formitems[0]->getOptions();
         $formitems = $formitems[1]->getSubItems();
 
         $folder_name = $this->getFolderName();
 
         foreach($formitems as $checkbox){
+            var_dump($checkFormItems);
+            if (($checkFormItems)=="link_all"){
+                $checkbox->setChecked(true);
+            }
             if(!is_null($checkbox->getChecked())){
 
                 $group_id = $checkbox->getPostVar();
+
                 $grid = array();
                 $grid[0]=$group_id;
                 array_push($group_ids,$grid);
