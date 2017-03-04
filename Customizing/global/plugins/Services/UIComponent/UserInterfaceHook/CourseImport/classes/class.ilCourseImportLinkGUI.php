@@ -310,8 +310,19 @@ class ilCourseImportLinkGUI{
             {
                 $linked_to_folders[] = $ilObjDataCache->lookupTitle($ilObjDataCache->lookupObjId($folder_ref_id[0]));
 
-                //get Ref_id of Excercise you want to link
+                             
+                //get Ref_id of Excercise or Test you want to link
                 $ref_id = $_GET['ref_id'];
+         
+                //bin mir ehrlich gesagt nicht sicher ob folder_ref_id die ref_id der Gruppen ist in die gelinked wird
+                //jedenfalls funktioniert das ganze noch nicht so richtig
+                
+                $objId = $this->getObjIdFromLinkedObject($ref_id);
+                $isAlreadyLinked = $this->isAlreadyLinked($folder_ref_id, $objId);
+                               
+         //       if( $isAlreadyLinked == true){
+           //         break;
+            //    }
 
                     // get node data
                     $top_node = $tree->getNodeData($ref_id);
@@ -394,8 +405,51 @@ class ilCourseImportLinkGUI{
         return true;
 
     }
+    
+    protected function getObjIdFromLinkedObject($ref_id){
+        global $ilDB;
 
-    protected function checkAccess()
+        $data = array();
+        
+        $query = "select  obj_id
+        from ilias.object_reference
+        where  ref_id = '".$ref_id."' ";
+        
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        return $data;
+        
+        
+        
+    }
+
+     protected function isAlreadyLinked($folder_ref_id, $objId){
+        global $ilDB;
+
+        $data = array();
+        
+        $query = "select obj_id 
+        from ilias.object_reference
+        where  ref_id = '".$ref_id."' 
+        and    obj_id = '".$folder_ref_id."' 
+        and deleted is null";
+        
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        if(empty($data)){
+            return true;
+        }
+        return false;
+        
+        
+    }
+    
+
+        protected function checkAccess()
     {
         global $ilAccess, $ilErr;
         if (!$ilAccess->checkAccess("write", "", $_GET['ref_id'])) {
