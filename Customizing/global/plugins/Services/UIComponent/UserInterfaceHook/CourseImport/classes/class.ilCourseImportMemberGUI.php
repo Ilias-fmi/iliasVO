@@ -130,6 +130,7 @@ class ilCourseImportMemberGUI {
     protected function view() {
 
         $form = $this->initForm();
+        $form->setValuesByPost();
         $this->tpl->setContent($form->getHTML());
     }
 
@@ -319,7 +320,8 @@ class ilCourseImportMemberGUI {
         }
 
         if($queryResult[0]["count(*)"] != 1) {
-            ilUtil::sendFailure($this->pl->txt("userInGroupNotExistent"), true);
+            var_dump($this->getGroupsWhereMember($member_id["usr_id"]));
+            ilUtil::sendFailure($this->pl->txt("userInGroupNotExistent").' '.$this->pl->txt("only_in").' '.implode(' - ',$this->getGroupsWhereMember($member_id["usr_id"])), true);
             return false;
         } else {
             return true;
@@ -407,7 +409,7 @@ class ilCourseImportMemberGUI {
         return $output;
     }
 
-    protected  function getGroupsWhereMember(){
+    protected  function getGroupsWhereMember($usr_id){
 
         global $ilDB;
 
@@ -419,7 +421,7 @@ class ilCourseImportMemberGUI {
                     join ilias.obj_members as om on om.obj_id = oref.obj_id
                     join ilias.usr_data as ud on ud.usr_id = om.usr_id
                     where oref.deleted is null and od.`type`='grp' and citem.parent_id = '".$_GET['ref_id'].
-                        "' and om.usr_id='".$this->userLogin->getValue()."'";
+                        "' and om.usr_id='".$usr_id."'";
         $result = $ilDB->query($query);
         while ($record = $ilDB->fetchAssoc($result)){
             array_push($data,$record);

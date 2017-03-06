@@ -104,7 +104,11 @@ class ilCourseImportLinkGUI{
     }
     protected function setTitleAndIcon()
     {
-        $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_exc.svg'));
+        if (ilObject::_lookupType($_GET['ref_id'], true) == 'tst'){
+            $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_tst.svg'));
+        }else {
+            $this->tpl->setTitleIcon(ilUtil::getImagePath('icon_exc.svg'));
+        }
         $this->tpl->setTitle($this->pl->txt('obj_link'));
         $this->tpl->setDescription($this->pl->txt('obj_link_desc'));
     }
