@@ -331,6 +331,10 @@ class ilCourseImportGroupGUI
                     $group->setPassword($password);
                 }
                 $group->enableUnlimitedRegistration((bool) !$_POST['reg_limit_time']);
+                if($reg_end<$reg_start){
+                
+                $reg_end = $reg_start;
+                }
                 $group->setRegistrationStart($reg_start);
                 $group->setRegistrationEnd($reg_end);
                 $group->setMaxMembers($members);
