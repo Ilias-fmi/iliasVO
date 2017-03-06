@@ -163,8 +163,33 @@ class ilCourseImportGroupDisplayGUI
                 'doUserAutoComplete', '', true,false);
             $n = 1;
 
+            $tmp_data = array();
+            $tmp_ids = array();
+            foreach ($data as $row){
+            $this->group_admins[$row['obj_id']]=$row['login'];
+                $id = $row["obj_id"];
+                if(in_array($id,$tmp_ids)){
+                    foreach ($tmp_data as $grp){
+                        if($grp["obj_id"]==$id){
+                            $course_admins = $this->getCourseAdminIDs($_GET["ref_id"]);
+                            $course_admins = $this->getLoginbyIDS($course_admins);
+                            if(in_array($grp["login"],$course_admins)){
+                                if(($key = array_search($grp, $tmp_data)) !== false) {
+                                    $tmp_data[$key]=$row;
+                                }
+                        }
+                        }
+                    }
+                }else{
+                    array_push($tmp_ids,$id);
+                    array_push($tmp_data,$row);
+                }
+            }
 
-        foreach ($data as $row){
+
+            $data=$tmp_data;
+            var_dump($data);
+            foreach ($data as $row){
             $section = new ilFormSectionHeaderGUI();
             $section->setTitle($row['title']);
             $form->addItem($section);
@@ -175,7 +200,7 @@ class ilCourseImportGroupDisplayGUI
             $textfield_tutor->setDataSource($ajax_url);
 
             $textfield_members = new ilNumberInputGUI($this->pl->txt("group_max_members"),"members".$n);
-            
+
             $time_limit = new ilCheckboxInputGUI($this->pl->txt('grp_reg_limited'),'reg_limit_time'.$n);
             $this->tpl->addJavaScript('./Services/Form/js/date_duration.js');
             $dur = new ilDateDurationInputGUI($this->pl->txt('grp_reg_period'),'reg'.$n);
@@ -191,10 +216,8 @@ class ilCourseImportGroupDisplayGUI
             $textfield_tutor->setValue($row['login']);
             $textfield_members->setValue($row['registration_max_members']);
             $time_limit->setChecked(!$row['registration_unlimited']);
-            var_dump(!$row['registration_unlimited']);
             $start_time = new ilDateTime($row['registration_start'],IL_CAL_DATETIME);
             $end_time = new ilDateTime($row['registration_end'],IL_CAL_DATETIME);
-            $this->group_admins[$row['obj_id']]=$row['login'];
             $dur->setStart($start_time);
             $dur->setEnd($end_time);
             //$form->addItem($ref_id_field);
@@ -284,6 +307,20 @@ class ilCourseImportGroupDisplayGUI
             array_push($role_id,$record);
         }
         return $role_id[0];
+    }
+    protected function getLoginbyIDS($ids){
+        global $ilDB;
+        $logins = array();
+        $data = array();
+        $query = 'Select ilias.usr_data.login from ilias.usr_data where ilias.usr_data.usr_id in (' . implode(",", $ids) . ') ';
+        $result = $ilDB->query($query);
+        while ($record = $ilDB->fetchAssoc($result)){
+            array_push($data,$record);
+        }
+        foreach ($data as $row){
+            array_push($logins,$row['login']);
+        }
+        return $logins;
     }
 
     protected function getCourseAdminIDs($ref_id){

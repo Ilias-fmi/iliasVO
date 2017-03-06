@@ -303,6 +303,8 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         $this->exercise=$ex_gui->object;
 
         $this->group = $_POST["grp_id"];
+        var_dump($_GET["grp_id"]);
+        var_dump($_POST["grp_id"]);
         $group_options = $this->getGroups();
 
         include_once 'Services/Tracking/classes/class.ilLPMarks.php';
@@ -365,18 +367,18 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
 
             $ilCtrl->setParameter($this, "ass_id", $this->assignment->getId());
 
-            if(ilExSubmission::hasAnySubmissions($this->assignment->getId()))
-            {
-
-                if($this->assignment->getType() == ilExAssignment::TYPE_TEXT)
-                {
-                    $ilToolbar->addFormButton($lng->txt("exc_list_text_assignment"), "listTextAssignment");
-                }
-                else
-                {
-                    $ilToolbar->addFormButton($lng->txt("download_all_returned_files"), "downloadAll");
-                }
-            }
+//            if(ilExSubmission::hasAnySubmissions($this->assignment->getId()))
+//            {
+//
+//                if($this->assignment->getType() == ilExAssignment::TYPE_TEXT)
+//                {
+//                    $ilToolbar->addFormButton($lng->txt("exc_list_text_assignment"), "listTextAssignment");
+//                }
+//                else
+//                {
+//                    $ilToolbar->addFormButton($lng->txt("download_all_returned_files"), "downloadAll");
+//                }
+//            }
             $this->ctrl->setParameter($this, "vw", self::VIEW_ASSIGNMENT);
 
             include_once("./Modules/Exercise/classes/class.ilExerciseMemberTableGUI.php");
@@ -403,6 +405,8 @@ class ilCourseImportTutorGUI extends ilExerciseManagementGUI {
         foreach($this->exercise->members_obj->getMembers() as $member_id)
         {
 
+            var_dump($member_id);
+            var_dump($this->group);
             if($this->isGroupMember($member_id,$this->group)) {
                 $submission = new ilExSubmission($this->assignment, $member_id);
                 $submission->updateTutorDownloadTime();

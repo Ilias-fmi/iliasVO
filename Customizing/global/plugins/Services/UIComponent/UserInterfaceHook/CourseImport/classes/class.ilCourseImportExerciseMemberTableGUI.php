@@ -84,6 +84,13 @@ class ilCourseImportExerciseMemberTableGUI extends ilExerciseMemberTableGUI {
             }
         }
 
+        $tmp = array();
+        foreach ($data as $member){
+                if($this->isGroupMember($member,$this->group)) {
+                array_push($tmp,$member);
+                }
+        }
+        $data=$tmp;
         $this->setData($data);
 
         $this->addColumn("", "", "1", true);
